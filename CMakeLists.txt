@@ -57,6 +57,7 @@ target_link_libraries (${PROJECT_NAME} systemd)
 target_link_libraries (${PROJECT_NAME} boost_coroutine)
 target_link_libraries (${PROJECT_NAME} sdbusplus -lstdc++fs)
 target_link_libraries (${PROJECT_NAME} ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} phosphor_logging)
 
 link_directories (${EXTERNAL_INSTALL_LOCATION}/lib)
 
