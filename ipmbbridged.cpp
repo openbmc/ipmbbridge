@@ -18,10 +18,13 @@
 #include "ipmbdefines.hpp"
 #include "ipmbutils.hpp"
 
-#include <linux/i2c-dev-user.h>
-
 #include <phosphor-logging/log.hpp>
 #include <tuple>
+
+extern "C" {
+#include <i2c/smbus.h>
+#include <linux/i2c-dev.h>
+}
 
 /**
  * @brief Dbus
