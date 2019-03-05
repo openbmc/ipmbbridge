@@ -547,8 +547,9 @@ std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>
     for (int i = 0; i < ipmbNumberOfTries; i++)
     {
         boost::system::error_code ec;
+        int i2cRetryCnt = 0;
 
-        for (int j = 0; j < ipmbI2cNumberOfRetries; j++)
+        for (; i2cRetryCnt < ipmbI2cNumberOfRetries; i2cRetryCnt++)
         {
             boost::asio::async_write(
                 i2cMasterSocket,
@@ -558,11 +559,15 @@ std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>
 
             if (ec)
             {
-                phosphor::logging::log<phosphor::logging::level::INFO>(
-                    "requestAdd: Sent to I2C failed");
-                continue;
+                continue; // retry
             }
             break;
+        }
+
+        if (i2cRetryCnt == ipmbI2cNumberOfRetries)
+        {
+            phosphor::logging::log<phosphor::logging::level::INFO>(
+                "requestAdd: Sent to I2C failed after retries");
         }
 
         request->timer->expires_after(
