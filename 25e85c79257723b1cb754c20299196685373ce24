@@ -1,0 +1,10 @@
+Ok-To-Test+1: Jenkins <openbmc-ci-admin@ozlabs.org>
+Verified+1: Jenkins <openbmc-ci-admin@ozlabs.org>
+Code-Review+1: James Feist <james.feist@linux.intel.com>
+Code-Review+1: Dawid Frycki <dawid.frycki@intel.com>
+Code-Review+2: Ed Tanous <ed.tanous@intel.com>
+Submitted-by: Ed Tanous <ed.tanous@intel.com>
+Submitted-at: Wed, 06 Mar 2019 01:47:02 +0000
+Reviewed-on: https://gerrit.openbmc-project.xyz/18930
+Project: openbmc/ipmbbridge
+Branch: refs/heads/master
