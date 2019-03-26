@@ -17,7 +17,9 @@
 
 #include "ipmbdefines.hpp"
 #include "ipmbutils.hpp"
+#include <fstream>
 
+#include <nlohmann/json.hpp>
 #include <phosphor-logging/log.hpp>
 #include <tuple>
 
@@ -36,18 +38,6 @@ static constexpr const char *ipmbDbusIntf = "org.openbmc.Ipmb";
 
 boost::asio::io_service io;
 auto conn = std::make_shared<sdbusplus::asio::connection>(io);
-
-/**
- * @brief Channel configuration table
- * TODO : move to user configuration as JSON file
- */
-static const std::vector<IpmbChannelConfig> ipmbChannelsConfig = {
-    // ME channel
-    {ipmbChannelType::me, "/sys/bus/i2c/devices/5-1010/slave-mqueue",
-     "/dev/i2c-5", 0x20, 0x2C}, // 8 bit addresses
-    // IPMB header channel
-    {ipmbChannelType::ipmb, "/sys/bus/i2c/devices/0-1010/slave-mqueue",
-     "/dev/i2c-0", 0x20, 0x58}}; // 8 bit addresses
 
 static std::list<IpmbChannel> ipmbChannels;
 
@@ -615,22 +605,43 @@ static int initializeChannels()
     std::shared_ptr<IpmbCommandFilter> commandFilter =
         std::make_shared<IpmbCommandFilter>();
 
-    for (const auto &channelConfig : ipmbChannelsConfig)
+    const char *config_file_path = "/usr/share/ipmb-channels.json";
+    std::ifstream config_file(config_file_path);
+    if (!config_file.is_open())
     {
-        auto channel = ipmbChannels.emplace(ipmbChannels.end(), io,
-                                            channelConfig.ipmbBmcSlaveAddress,
-                                            channelConfig.ipmbRqSlaveAddress,
-                                            channelConfig.type, commandFilter);
-
-        if (channel->ipmbChannelInit(channelConfig.ipmbI2cSlave,
-                                     channelConfig.ipmbI2cMaster) < 0)
-        {
-            phosphor::logging::log<phosphor::logging::level::ERR>(
-                "initializeChannels: channel initialization failed");
-            return -1;
-        }
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+                "initializeChannels: Cannot open config path");
+        return -1;
     }
-
+    try
+    {
+      auto data = nlohmann::json::parse(config_file, nullptr);
+      for (auto channelConfig : data["channels"])
+      {
+          std::string typeConfig = channelConfig["type"];
+          std::string masterPath = channelConfig["master-path"];
+          std::string slavePath = channelConfig["slave-path"];
+          uint8_t bmcAddr = channelConfig["bmc-addr"];
+          uint8_t reqAddr = channelConfig["remote-addr"];
+          ipmbChannelType type = typeConfig == "me" ? ipmbChannelType::me : ipmbChannelType::ipmb;
+          auto channel = ipmbChannels.emplace(ipmbChannels.end(), io,
+                                              bmcAddr, reqAddr, type,
+                                              commandFilter);
+          if (channel->ipmbChannelInit(slavePath.c_str(),
+                                     masterPath.c_str()) < 0)
+          {
+              phosphor::logging::log<phosphor::logging::level::ERR>(
+                  "initializeChannels: channel initialization failed");
+              return -1;
+          }
+      }
+    }
+    catch(...)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+                "initializeChannels: Error parsing config file");
+        return -1;
+    }
     return 0;
 }
 
