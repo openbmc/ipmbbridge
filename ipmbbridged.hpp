@@ -145,18 +145,6 @@ enum class ipmbChannelType
     me = 1
 };
 
-/**
- * @brief Channel configuration structure
- */
-struct IpmbChannelConfig
-{
-    ipmbChannelType type;
-    const char *ipmbI2cSlave;
-    const char *ipmbI2cMaster;
-    uint8_t ipmbBmcSlaveAddress;
-    uint8_t ipmbRqSlaveAddress;
-};
-
 // TODO w/a to differentiate channel origin of incoming IPMI response:
 // extracting channel number from 2 oldest bits of seq
 constexpr ipmbChannelType getChannelFromSeq(const uint8_t &seq)
