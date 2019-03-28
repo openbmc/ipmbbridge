@@ -41,5 +41,5 @@ link_directories (${EXTERNAL_INSTALL_LOCATION}/lib)
 
 set (SERVICE_FILES ${PROJECT_SOURCE_DIR}/ipmb.service)
 
-install (TARGETS ${PROJECT_NAME} DESTINATION sbin)
+install (TARGETS ${PROJECT_NAME} DESTINATION bin)
 install (FILES ${SERVICE_FILES} DESTINATION /lib/systemd/system/)
