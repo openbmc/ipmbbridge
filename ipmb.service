@@ -3,7 +3,7 @@ Description=IPMB bridge
 After=phosphor-ipmi-host.service
 
 [Service]
-ExecStart=/usr/sbin/ipmbbridged
+ExecStart=ipmbbridged
 SyslogIdentifier=ipmbbridged
 Restart=always
 Type=simple
