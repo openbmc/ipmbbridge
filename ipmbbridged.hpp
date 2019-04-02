@@ -145,13 +145,6 @@ enum class ipmbChannelType
     me = 1
 };
 
-// TODO w/a to differentiate channel origin of incoming IPMI response:
-// extracting channel number from 2 oldest bits of seq
-constexpr ipmbChannelType getChannelFromSeq(const uint8_t &seq)
-{
-    return static_cast<ipmbChannelType>((seq & 0xC0) >> 6);
-}
-
 /**
  * @brief IpmbResponse declaration
  */
@@ -171,11 +164,11 @@ struct IpmbResponse
 
     IpmbResponse(uint8_t address, uint8_t netFn, uint8_t rqLun, uint8_t rsSA,
                  uint8_t seq, uint8_t rsLun, uint8_t cmd,
-                 uint8_t completionCode, std::vector<uint8_t> &inputData);
+                 uint8_t completionCode, const std::vector<uint8_t> &inputData);
 
     void i2cToIpmbConstruct(IPMB_HEADER *ipmbBuffer, size_t bufferLength);
 
-    int ipmbToi2cConstruct(std::vector<uint8_t> &buffer);
+    std::shared_ptr<std::vector<uint8_t>> ipmbToi2cConstruct();
 };
 
 /**
@@ -202,12 +195,10 @@ struct IpmbRequest
 
     IpmbRequest(uint8_t address, uint8_t netFn, uint8_t rsLun, uint8_t rqSA,
                 uint8_t seq, uint8_t rqLun, uint8_t cmd,
-                std::vector<uint8_t> &inputData);
+                const std::vector<uint8_t> &inputData);
 
     IpmbRequest(const IpmbRequest &) = delete;
     IpmbRequest &operator=(IpmbRequest const &) = delete;
-
-    void incomingMessageHandler();
 
     std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>
         returnMatchedResponse();
@@ -218,10 +209,6 @@ struct IpmbRequest
     void i2cToIpmbConstruct(IPMB_HEADER *ipmbBuffer, size_t bufferLength);
 
     int ipmbToi2cConstruct(std::vector<uint8_t> &buffer);
-
-    // TODO w/a to differentiate channel origin of incoming IPMI response:
-    // saving channel number at two oldest unused bits of seq
-    void addChannelToSeq(const ipmbChannelType &channelType);
 };
 
 /**
@@ -247,7 +234,8 @@ class IpmbCommandFilter
  * @brief Command filtering defines
  */
 
-constexpr uint8_t ipmbIpmiInvalidCommand = 0xC1;
+constexpr uint8_t ipmbIpmiInvalidCmd = 0xC1;
+constexpr uint8_t ipmbIpmiCmdRespNotProvided = 0xCE;
 
 constexpr uint8_t ipmbReqNetFnFromRespNetFn(uint8_t reqNetFn)
 {
