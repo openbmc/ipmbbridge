@@ -151,10 +151,10 @@ enum class ipmbChannelType
 struct IpmbChannelConfig
 {
     ipmbChannelType type;
-    const char *ipmbI2cSlave;
-    const char *ipmbI2cMaster;
+    uint8_t ipmbBmcBusId;
     uint8_t ipmbBmcSlaveAddress;
     uint8_t ipmbRqSlaveAddress;
+    bool bmcSlaveAddressChangeable;
 };
 
 // TODO w/a to differentiate channel origin of incoming IPMI response:
@@ -272,14 +272,20 @@ constexpr uint8_t ipmbReqNetFnFromRespNetFn(uint8_t reqNetFn)
 class IpmbChannel
 {
   public:
-    IpmbChannel(boost::asio::io_service &io, uint8_t ipmbBmcSlaveAddress,
-                uint8_t ipmbRqSlaveAddress, ipmbChannelType type,
+    IpmbChannel(boost::asio::io_service &io, uint8_t ipmbBmcBusId,
+                uint8_t ipmbBmcSlaveAddress, uint8_t ipmbRqSlaveAddress,
+                bool bmcSlaveAddressChangeable, ipmbChannelType type,
                 std::shared_ptr<IpmbCommandFilter> commandFilter);
 
     IpmbChannel(const IpmbChannel &) = delete;
     IpmbChannel &operator=(IpmbChannel const &) = delete;
+    ~IpmbChannel()
+    {
+        ipmbChannelDeinit();
+    };
 
-    int ipmbChannelInit(const char *ipmbI2cSlave, const char *ipmbI2cMaster);
+    int ipmbChannelInit(uint8_t busId, uint8_t slaveAddress);
+    int ipmbChannelDeinit();
 
     bool seqNumGet(uint8_t &seq);
 
@@ -288,6 +294,8 @@ class IpmbChannel
     uint8_t getBmcSlaveAddress();
 
     uint8_t getRqSlaveAddress();
+
+    bool getBmcSlaveAddressChangeable();
 
     void addFilter(const uint8_t respNetFn, const uint8_t cmd);
 
@@ -307,8 +315,10 @@ class IpmbChannel
     int ipmbi2cMasterFd;
     int ipmbi2cSlaveFd;
 
+    uint8_t ipmbBmcBusId;
     uint8_t ipmbBmcSlaveAddress;
     uint8_t ipmbRqSlaveAddress;
+    bool bmcSlaveAddressChangeable;
 
     ipmbChannelType type;
 
