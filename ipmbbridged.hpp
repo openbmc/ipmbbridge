@@ -293,7 +293,7 @@ class IpmbChannel
 
     uint8_t getBmcSlaveAddress();
 
-    uint8_t getRqSlaveAddress();
+    uint8_t getDefaultRqSlaveAddress();
 
     bool getBmcSlaveAddressChangeable();
 
@@ -301,7 +301,11 @@ class IpmbChannel
 
     void processI2cEvent();
 
-    void ipmbResponseSend(std::shared_ptr<std::vector<uint8_t>> buffer,
+    int updateTargetAddress(uint8_t addr);
+
+    void ipmbResponseSend(std::shared_ptr<std::vector<uint8_t>> buffer);
+
+    void ipmbSendI2cFrame(std::shared_ptr<std::vector<uint8_t>> buffer,
                           size_t retriesAttempted);
 
     std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>
@@ -317,7 +321,8 @@ class IpmbChannel
 
     uint8_t ipmbBmcBusId;
     uint8_t ipmbBmcSlaveAddress;
-    uint8_t ipmbRqSlaveAddress;
+    uint8_t ipmbDefaultRqSlaveAddress;
+    uint8_t ipmbCurrRqSlaveAddress;
     bool bmcSlaveAddressChangeable;
 
     ipmbChannelType type;
