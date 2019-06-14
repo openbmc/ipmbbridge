@@ -12,7 +12,7 @@
       "master-path": "/dev/i2c-0",
       "slave-path": "/sys/bus/i2c/devices/0-1010/slave-mqueue",
       "bmc-addr": 32,
-      "remote-addr": 88
+      "remote-addr": 0
     }
   ]
 }
