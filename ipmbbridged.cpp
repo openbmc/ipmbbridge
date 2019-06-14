@@ -18,6 +18,8 @@
 #include "ipmbdefines.hpp"
 #include "ipmbutils.hpp"
 
+#include <boost/algorithm/string/replace.hpp>
+#include <filesystem>
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <phosphor-logging/log.hpp>
@@ -501,6 +503,41 @@ IpmbChannel::IpmbChannel(boost::asio::io_service &io,
 int IpmbChannel::ipmbChannelInit(const char *ipmbI2cSlave,
                                  const char *ipmbI2cMaster)
 {
+    // extract bus id from master path and save
+    std::string ipmbI2cMasterStr(ipmbI2cMaster);
+    auto findHyphen = ipmbI2cMasterStr.find("-");
+    std::string busStr = ipmbI2cMasterStr.substr(findHyphen + 1);
+    try
+    {
+        ipmbBusId = std::stoi(busStr);
+    }
+    catch (std::invalid_argument)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmbChannelInit: invalid bus id in master-path config");
+        return -1;
+    }
+
+    // Check if sysfs has device. If not, enable I2C slave driver by command
+    //     echo "slave-mqueue 0x1010" > /sys/bus/i2c/devices/i2c-0/new_device
+    bool hasSysfs = std::filesystem::exists(ipmbI2cSlave);
+    if (!hasSysfs)
+    {
+        std::string deviceFileName =
+            "/sys/bus/i2c/devices/i2c-" + busStr + "/new_device";
+        std::string para = "slave-mqueue 0x1010"; // init with BMC addr 0x20
+        std::fstream deviceFile;
+        deviceFile.open(deviceFileName, std::ios::out);
+        if (!deviceFile.good())
+        {
+            phosphor::logging::log<phosphor::logging::level::ERR>(
+                "ipmbChannelInit: error opening deviceFile");
+            return -1;
+        }
+        deviceFile << para;
+        deviceFile.close();
+    }
+
     // open fd to i2c slave device
     ipmbi2cSlaveFd = open(ipmbI2cSlave, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
     if (ipmbi2cSlaveFd < 0)
@@ -547,6 +584,89 @@ int IpmbChannel::ipmbChannelInit(const char *ipmbI2cSlave,
         });
 
     return 0;
+}
+
+int IpmbChannel::ipmbChannelUpdateSlaveAddress(const uint8_t newBmcSlaveAddr)
+{
+    if (ipmbi2cSlaveFd > 0)
+    {
+        i2cSlaveSocket.close();
+        close(ipmbi2cSlaveFd);
+    }
+
+    // disable old I2C slave driver by command:
+    //     echo "0x1010" > /sys/bus/i2c/devices/i2c-0/delete_device
+    std::string deviceFileName;
+    std::string para;
+    std::fstream deviceFile;
+    deviceFileName = "/sys/bus/i2c/devices/i2c-" + std::to_string(ipmbBusId) +
+                     "/delete_device";
+    para = "0x1010"; // assume old BMC addr is 0x20
+    deviceFile.open(deviceFileName, std::ios::out);
+    if (!deviceFile.good())
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmbChannelUpdateSlaveAddress: error opening deviceFile to delete "
+            "sysfs");
+        return -1;
+    }
+    deviceFile << para;
+    deviceFile.close();
+
+    // enable new I2C slave driver by command:
+    //      echo "slave-mqueue 0x1012" > /sys/bus/i2c/devices/i2c-0/new_device
+    deviceFileName =
+        "/sys/bus/i2c/devices/i2c-" + std::to_string(ipmbBusId) + "/new_device";
+    std::ostringstream hex;
+    uint16_t addr = 0x1000 + (newBmcSlaveAddr >> 1);
+    hex << std::hex << static_cast<uint16_t>(addr);
+    const std::string &addressHexStr = hex.str();
+    para = "slave-mqueue 0x" + addressHexStr;
+    deviceFile.open(deviceFileName, std::ios::out);
+    if (!deviceFile.good())
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmbChannelUpdateSlaveAddress: error opening deviceFile to create "
+            "sysfs");
+        return -1;
+    }
+    deviceFile << para;
+    deviceFile.close();
+
+    // open fd to i2c slave device
+    std::string ipmbI2cSlaveStr = "/sys/bus/i2c/devices/" +
+                                  std::to_string(ipmbBusId) + "-" +
+                                  addressHexStr + "/slave-mqueue";
+    ipmbi2cSlaveFd =
+        open(ipmbI2cSlaveStr.c_str(), O_RDONLY | O_NONBLOCK | O_CLOEXEC);
+    if (ipmbi2cSlaveFd < 0)
+    {
+        phosphor::logging::log<phosphor::logging::level::ERR>(
+            "ipmbChannelInit: error opening ipmbI2cSlave");
+        return -1;
+    }
+
+    // start to receive i2c data as slave
+    i2cSlaveSocket.assign(boost::asio::ip::tcp::v4(), ipmbi2cSlaveFd);
+    i2cSlaveSocket.async_wait(
+        boost::asio::ip::tcp::socket::wait_error,
+        [this](const boost::system::error_code &ec) {
+            if (ec)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "Error: processI2cEvent()");
+                return;
+            }
+
+            processI2cEvent();
+        });
+
+    return 0;
+}
+
+uint8_t IpmbChannel::getBusId()
+{
+    return ipmbBusId;
 }
 
 uint8_t IpmbChannel::getBmcSlaveAddress()
@@ -741,6 +861,55 @@ auto ipmbHandleRequest = [](boost::asio::yield_context yield,
     return channel->requestAdd(yield, request);
 };
 
+void addUpdateSlaveAddrHandler()
+{
+    // callback to handle dbus signal of updating slave addr
+    std::function<void(sdbusplus::message::message &)> updateSlaveAddrHandler =
+        [](sdbusplus::message::message &message) {
+            uint8_t reqChannel, busId, slaveAddr;
+
+            // valid source of signal, check whether from multi-node manager
+            std::string pathName = message.get_path();
+            if (pathName != "/xyz/openbmc_project/MultiNode/Status")
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "addUpdateSlaveAddrHandler: invalid obj path");
+                return;
+            }
+
+            message.read(reqChannel, busId, slaveAddr);
+
+            IpmbChannel *channel =
+                getChannel(static_cast<ipmbChannelType>(reqChannel));
+            if (channel == nullptr ||
+                reqChannel != static_cast<uint8_t>(ipmbChannelType::ipmb))
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "addUpdateSlaveAddrHandler: invalid channel");
+                return;
+            }
+            if (busId != channel->getBusId())
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "addUpdateSlaveAddrHandler: invalid busId");
+                return;
+            }
+            if (channel->getBmcSlaveAddress() == slaveAddr)
+            {
+                phosphor::logging::log<phosphor::logging::level::INFO>(
+                    "addUpdateSlaveAddrHandler: channel bmc slave addr is "
+                    "unchanged, do nothing");
+                return;
+            }
+
+            channel->ipmbChannelUpdateSlaveAddress(slaveAddr);
+        };
+
+    static auto match = std::make_unique<sdbusplus::bus::match::match>(
+        static_cast<sdbusplus::bus::bus &>(*conn),
+        "type='signal',member='updateBmcSlaveAddr',", updateSlaveAddrHandler);
+}
+
 /**
  * @brief Main
  */
@@ -760,8 +929,11 @@ int main(int argc, char *argv[])
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "Error initializeChannels");
-        return -1;
+        // Do NOT exit program, correct slave addr may be updated by dbus signal
+        // return -1;
     }
+
+    addUpdateSlaveAddrHandler();
 
     io.run();
     return 0;
