@@ -273,7 +273,7 @@ class IpmbChannel
 
     void processI2cEvent();
 
-    void ipmbResponseSend(std::shared_ptr<std::vector<uint8_t>> buffer,
+    void ipmbSendI2cFrame(std::shared_ptr<std::vector<uint8_t>> buffer,
                           size_t retriesAttempted);
 
     std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>
