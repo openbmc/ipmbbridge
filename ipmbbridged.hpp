@@ -257,9 +257,13 @@ class IpmbChannel
 
     int ipmbChannelInit(const char *ipmbI2cSlave, const char *ipmbI2cMaster);
 
+    int ipmbChannelUpdateSlaveAddress(const uint8_t newBmcSlaveAddr);
+
     bool seqNumGet(uint8_t &seq);
 
     ipmbChannelType getChannelType();
+
+    uint8_t getBusId();
 
     uint8_t getBmcSlaveAddress();
 
@@ -285,6 +289,7 @@ class IpmbChannel
 
     uint8_t ipmbBmcSlaveAddress;
     uint8_t ipmbRqSlaveAddress;
+    uint8_t ipmbBusId;
 
     ipmbChannelType type;
 
