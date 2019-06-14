@@ -80,6 +80,7 @@ void IpmbRequest::i2cToIpmbConstruct(IPMB_HEADER *ipmbBuffer,
     seq = ipmbSeqGet(ipmbBuffer->Header.Req.rqSeqLUN);
     rqLun = ipmbLunFromSeqLunGet(ipmbBuffer->Header.Req.rqSeqLUN);
     cmd = ipmbBuffer->Header.Req.cmd;
+    address = ipmbBuffer->Header.Req.address;
 
     size_t dataLength =
         bufferLength - (ipmbConnectionHeaderLength +
@@ -254,7 +255,7 @@ void IpmbCommandFilter::addFilter(const uint8_t reqNetFn, const uint8_t cmd)
 /**
  * @brief Ipmb channel
  */
-void IpmbChannel::ipmbResponseSend(std::shared_ptr<std::vector<uint8_t>> buffer,
+void IpmbChannel::ipmbSendI2cFrame(std::shared_ptr<std::vector<uint8_t>> buffer,
                                    size_t retriesAttempted = 0)
 {
     boost::asio::async_write(
@@ -270,11 +271,11 @@ void IpmbChannel::ipmbResponseSend(std::shared_ptr<std::vector<uint8_t>> buffer,
                 if (currentRetryCnt > ipmbI2cNumberOfRetries)
                 {
                     phosphor::logging::log<phosphor::logging::level::ERR>(
-                        "ipmbResponseSend: sent to I2C failed after retries");
+                        "ipmbSendI2cFrame: sent to I2C failed after retries");
                     return;
                 }
                 currentRetryCnt++;
-                ipmbResponseSend(buffer, currentRetryCnt);
+                ipmbSendI2cFrame(buffer, currentRetryCnt);
             }
         });
 }
@@ -356,6 +357,20 @@ void IpmbChannel::processI2cEvent()
         goto end;
     }
 
+    // if it is broadcast message from ipmb channel, send out dbus signal
+    if (ipmbFrame->Header.Req.address == 0x0 &&
+        getChannelType() == ipmbChannelType::ipmb)
+    {
+        auto ipmbMessageReceived = IpmbRequest();
+        ipmbMessageReceived.i2cToIpmbConstruct(ipmbFrame, r);
+        sdbusplus::message::message msg =
+            conn->new_signal(ipmbObj, ipmbDbusIntf, "receiveBroadcast");
+        msg.append(ipmbMessageReceived.netFn, ipmbMessageReceived.cmd,
+                   ipmbMessageReceived.data);
+        msg.signal_send();
+        goto end;
+    }
+
     // copy frame to ipmib message buffer
     if (ipmbIsResponse(ipmbFrame))
     {
@@ -375,6 +390,7 @@ void IpmbChannel::processI2cEvent()
         {
             uint8_t netFn = ipmbNetFnGet(ipmbFrame->Header.Req.rsNetFnLUN);
             uint8_t cmd = ipmbFrame->Header.Req.cmd;
+            uint8_t addr = ipmbFrame->Header.Req.address;
 
             if (commandFilter->isBlocked(netFn, cmd))
             {
@@ -382,16 +398,16 @@ void IpmbChannel::processI2cEvent()
                 uint8_t lun =
                     ipmbLunFromSeqLunGet(ipmbFrame->Header.Req.rqSeqLUN);
 
-                // prepare generic response
-                auto ipmbResponse =
-                    IpmbResponse(ipmbRqSlaveAddress, ipmbRespNetFn(netFn), lun,
-                                 ipmbBmcSlaveAddress, seq, ipmbRsLun, cmd,
-                                 ipmbIpmiInvalidCmd, {});
+                // prepare generic response, target addr is src addr of incoming
+                // message
+                auto ipmbResponse = IpmbResponse(
+                    addr, ipmbRespNetFn(netFn), lun, ipmbBmcSlaveAddress, seq,
+                    ipmbRsLun, cmd, ipmbIpmiInvalidCmd, {});
 
                 auto buffer = ipmbResponse.ipmbToi2cConstruct();
                 if (buffer)
                 {
-                    ipmbResponseSend(buffer);
+                    ipmbSendI2cFrame(buffer);
                 }
 
                 goto end;
@@ -402,13 +418,15 @@ void IpmbChannel::processI2cEvent()
         ipmbMessageReceived.i2cToIpmbConstruct(ipmbFrame, r);
 
         std::map<std::string, std::variant<int>> options{
-            {"rqSA", ipmbAddressTo7BitSet(ipmbRqSlaveAddress)}};
+            {"rqSA", ipmbAddressTo7BitSet(ipmbMessageReceived.address)}};
         using IpmiDbusRspType = std::tuple<uint8_t, uint8_t, uint8_t, uint8_t,
                                            std::vector<uint8_t>>;
         conn->async_method_call(
             [this, rqLun{ipmbMessageReceived.rqLun},
-             seq{ipmbMessageReceived.seq}](const boost::system::error_code &ec,
-                                           const IpmiDbusRspType &response) {
+             seq{ipmbMessageReceived.seq},
+             address{ipmbMessageReceived.address}](
+                const boost::system::error_code &ec,
+                const IpmiDbusRspType &response) {
                 const auto &[netfn, lun, cmd, cc, payload] = response;
                 if (ec)
                 {
@@ -417,7 +435,6 @@ void IpmbChannel::processI2cEvent()
                     return;
                 }
 
-                uint8_t rqSlaveAddress = getRqSlaveAddress();
                 uint8_t bmcSlaveAddress = getBmcSlaveAddress();
 
                 if (payload.size() > ipmbMaxDataSize)
@@ -427,13 +444,13 @@ void IpmbChannel::processI2cEvent()
 
                     // prepare generic response
                     auto ipmbResponse = IpmbResponse(
-                        rqSlaveAddress, netfn, rqLun, bmcSlaveAddress, seq,
-                        ipmbRsLun, cmd, ipmbIpmiCmdRespNotProvided, {});
+                        address, netfn, rqLun, bmcSlaveAddress, seq, ipmbRsLun,
+                        cmd, ipmbIpmiCmdRespNotProvided, {});
 
                     auto buffer = ipmbResponse.ipmbToi2cConstruct();
                     if (buffer)
                     {
-                        ipmbResponseSend(buffer);
+                        ipmbSendI2cFrame(buffer);
                     }
 
                     return;
@@ -455,8 +472,8 @@ void IpmbChannel::processI2cEvent()
 
                 // payload is empty after constructor invocation
                 auto ipmbResponse =
-                    IpmbResponse(rqSlaveAddress, netfn, rqLun, bmcSlaveAddress,
-                                 seq, lun, cmd, cc, payload);
+                    IpmbResponse(address, netfn, rqLun, bmcSlaveAddress, seq,
+                                 lun, cmd, cc, payload);
 
                 auto buffer = ipmbResponse.ipmbToi2cConstruct();
                 if (!buffer)
@@ -466,7 +483,7 @@ void IpmbChannel::processI2cEvent()
                     return;
                 }
 
-                ipmbResponseSend(buffer);
+                ipmbSendI2cFrame(buffer);
             },
             "xyz.openbmc_project.Ipmi.Host", "/xyz/openbmc_project/Ipmi",
             "xyz.openbmc_project.Ipmi.Server", "execute",
@@ -910,6 +927,51 @@ void addUpdateSlaveAddrHandler()
         "type='signal',member='updateBmcSlaveAddr',", updateSlaveAddrHandler);
 }
 
+void addSendBroadcastHandler()
+{
+    // callback to handle dbus signal of sending broadcast message
+    std::function<void(sdbusplus::message::message &)> sendBroadcastHandler =
+        [](sdbusplus::message::message &message) {
+            uint8_t reqChannel, netFn, lun, cmd;
+            std::vector<uint8_t> dataReceived;
+            message.read(reqChannel, netFn, lun, cmd, dataReceived);
+
+            IpmbChannel *channel =
+                getChannel(static_cast<ipmbChannelType>(reqChannel));
+            if (channel == nullptr)
+            {
+                phosphor::logging::log<phosphor::logging::level::ERR>(
+                    "addSendBroadcastMsgHandler: requested channel does not "
+                    "exist");
+                return;
+            }
+
+            uint8_t bmcSlaveAddress = channel->getBmcSlaveAddress();
+            uint8_t seqNum = 0;       // seqNum is not used in broadcast msg
+            uint8_t targetAddr = 0x0; // 0x0 is defined for broadcast msg
+
+            // construct the request to add it to outstanding request list
+            std::shared_ptr<IpmbRequest> request =
+                std::make_shared<IpmbRequest>(targetAddr, netFn, ipmbRsLun,
+                                              bmcSlaveAddress, seqNum, lun, cmd,
+                                              dataReceived);
+
+            std::shared_ptr<std::vector<uint8_t>> buffer =
+                std::make_shared<std::vector<uint8_t>>();
+
+            if (request->ipmbToi2cConstruct(*buffer) != 0)
+            {
+                return;
+            }
+
+            channel->ipmbSendI2cFrame(buffer);
+        };
+
+    static auto match = std::make_unique<sdbusplus::bus::match::match>(
+        static_cast<sdbusplus::bus::bus &>(*conn),
+        "type='signal',member='sendBroadcast',", sendBroadcastHandler);
+}
+
 /**
  * @brief Main
  */
@@ -934,6 +996,8 @@ int main(int argc, char *argv[])
     }
 
     addUpdateSlaveAddrHandler();
+
+    addSendBroadcastHandler();
 
     io.run();
     return 0;
