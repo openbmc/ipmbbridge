@@ -21,6 +21,11 @@
 #include <sdbusplus/message.hpp>
 #include <vector>
 
+extern "C" {
+#include <i2c/smbus.h>
+#include <linux/i2c-dev.h>
+}
+
 #ifndef IPMBBRIDGED_HPP
 #define IPMBBRIDGED_HPP
 
@@ -47,6 +52,11 @@ constexpr uint64_t ipmbRequestRetryTimeout = 250; // ms
  * @brief Ipmb I2C communication
  */
 constexpr uint8_t ipmbI2cNumberOfRetries = 2;
+
+/**
+ * @brief Ipmb boardcast address
+ */
+constexpr uint8_t broadcastAddress = 0x0;
 
 /**
  * @brief Ipmb defines
@@ -273,7 +283,7 @@ class IpmbChannel
 
     void processI2cEvent();
 
-    void ipmbResponseSend(std::shared_ptr<std::vector<uint8_t>> buffer,
+    void ipmbSendI2cFrame(std::shared_ptr<std::vector<uint8_t>> buffer,
                           size_t retriesAttempted);
 
     std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>
@@ -307,6 +317,38 @@ class IpmbChannel
     void makeRequestInvalid(IpmbRequest &request);
 
     void makeRequestValid(std::shared_ptr<IpmbRequest> request);
+};
+
+/**
+ * @brief ioWrite class declaration
+ */
+class ioWrite
+{
+  public:
+    ioWrite(std::vector<uint8_t> &buffer)
+    {
+        i2cmsg[0].addr = ipmbAddressTo7BitSet(buffer[0]);
+        i2cmsg[0].len = buffer.size() - ipmbAddressSize;
+        i2cmsg[0].buf = buffer.data() + ipmbAddressSize;
+
+        msgRdwr.msgs = i2cmsg;
+        msgRdwr.nmsgs = 1;
+    };
+
+    int name()
+    {
+        return static_cast<int>(I2C_RDWR);
+    }
+
+    void *data()
+    {
+        return &msgRdwr;
+    }
+
+  private:
+    int myname;
+    i2c_rdwr_ioctl_data msgRdwr = {0};
+    i2c_msg i2cmsg[1] = {0};
 };
 
 #endif
