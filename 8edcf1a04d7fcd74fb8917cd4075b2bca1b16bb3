@@ -1,0 +1,10 @@
+Ok-To-Test+1: Jenkins <openbmc-ci-admin@ozlabs.org>
+Verified+1: Jenkins <openbmc-ci-admin@ozlabs.org>
+Code-Review+1: Yuan Li <yuan.li@linux.intel.com>
+Code-Review+1: Dawid Frycki <dawid.frycki@intel.com>
+Code-Review+2: Vernon Mauery <vernon.mauery@linux.intel.com>
+Submitted-by: XU, Qiang <qiang.xu@linux.intel.com>
+Submitted-at: Thu, 11 Jul 2019 00:18:27 +0000
+Reviewed-on: https://gerrit.openbmc-project.xyz/c/openbmc/ipmbbridge/+/21281
+Project: openbmc/ipmbbridge
+Branch: refs/heads/master
