@@ -265,7 +265,7 @@ class IpmbChannel
     IpmbChannel(const IpmbChannel &) = delete;
     IpmbChannel &operator=(IpmbChannel const &) = delete;
 
-    int ipmbChannelInit(const char *ipmbI2cSlave, const char *ipmbI2cMaster);
+    int ipmbChannelInit(const char *ipmbI2cSlave);
 
     int ipmbChannelUpdateSlaveAddress(const uint8_t newBmcSlaveAddr);
 
@@ -291,10 +291,8 @@ class IpmbChannel
                    std::shared_ptr<IpmbRequest> requestToSend);
 
   private:
-    boost::asio::ip::tcp::socket i2cSlaveSocket;
-    boost::asio::posix::stream_descriptor i2cMasterSocket;
+    boost::asio::posix::stream_descriptor i2cSlaveSocket;
 
-    int ipmbi2cMasterFd;
     int ipmbi2cSlaveFd;
 
     uint8_t ipmbBmcSlaveAddress;
