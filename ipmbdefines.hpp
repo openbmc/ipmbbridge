@@ -61,4 +61,10 @@ typedef struct _IPMB_HEADER
 } IPMB_HEADER;
 #pragma pack()
 
+typedef struct _IPMB_DRV_HDR
+{
+    uint8_t len;
+    IPMB_HEADER hdr;
+} IPMB_PKT;
+
 #endif

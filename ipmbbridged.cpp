@@ -89,7 +89,8 @@ void IpmbRequest::i2cToIpmbConstruct(IPMB_HEADER *ipmbBuffer,
 
 int IpmbRequest::ipmbToi2cConstruct(std::vector<uint8_t> &buffer)
 {
-    size_t bufferLength = data.size() + ipmbRequestDataHeaderLength +
+    /* Add one byte for length byte as per required by driver */
+    size_t bufferLength = 1 + data.size() + ipmbRequestDataHeaderLength +
                           ipmbConnectionHeaderLength + ipmbChecksumSize;
 
     if (bufferLength > ipmbMaxFrameLength)
@@ -99,7 +100,9 @@ int IpmbRequest::ipmbToi2cConstruct(std::vector<uint8_t> &buffer)
 
     buffer.resize(bufferLength);
     static_assert(ipmbMaxFrameLength >= sizeof(IPMB_HEADER));
-    auto ipmbBuffer = reinterpret_cast<IPMB_HEADER *>(buffer.data());
+    IPMB_PKT *ipmbPkt = reinterpret_cast<IPMB_PKT *>(buffer.data());
+    ipmbPkt->len = bufferLength - 1;
+    IPMB_HEADER *ipmbBuffer = &(ipmbPkt->hdr);
 
     // constructing buffer from ipmb request
     ipmbBuffer->Header.Req.address = address;
@@ -109,7 +112,7 @@ int IpmbRequest::ipmbToi2cConstruct(std::vector<uint8_t> &buffer)
     ipmbBuffer->Header.Req.cmd = cmd;
 
     ipmbBuffer->Header.Req.checksum1 = ipmbChecksumCompute(
-        buffer.data(), ipmbConnectionHeaderLength - ipmbChecksumSize);
+        (uint8_t *)ipmbBuffer, ipmbConnectionHeaderLength - ipmbChecksumSize);
 
     if (data.size() > 0)
     {
@@ -117,7 +120,7 @@ int IpmbRequest::ipmbToi2cConstruct(std::vector<uint8_t> &buffer)
     }
 
     buffer[bufferLength - ipmbChecksumSize] =
-        ipmbChecksumCompute(buffer.data() + ipmbChecksum2StartOffset,
+        ipmbChecksumCompute((uint8_t *)ipmbBuffer + ipmbChecksum2StartOffset,
                             (ipmbRequestDataHeaderLength + data.size()));
 
     return 0;
@@ -188,7 +191,8 @@ void IpmbResponse::i2cToIpmbConstruct(IPMB_HEADER *ipmbBuffer,
 
 std::shared_ptr<std::vector<uint8_t>> IpmbResponse::ipmbToi2cConstruct()
 {
-    size_t bufferLength = data.size() + ipmbResponseDataHeaderLength +
+    /* Add one byte for length byte as per required by driver */
+    size_t bufferLength = 1 + data.size() + ipmbResponseDataHeaderLength +
                           ipmbConnectionHeaderLength + ipmbChecksumSize;
 
     if (bufferLength > ipmbMaxFrameLength)
@@ -199,7 +203,9 @@ std::shared_ptr<std::vector<uint8_t>> IpmbResponse::ipmbToi2cConstruct()
     std::shared_ptr<std::vector<uint8_t>> buffer =
         std::make_shared<std::vector<uint8_t>>(bufferLength);
 
-    auto ipmbBuffer = reinterpret_cast<IPMB_HEADER *>(buffer->data());
+    IPMB_PKT *ipmbPkt = reinterpret_cast<IPMB_PKT *>(buffer->data());
+    ipmbPkt->len = bufferLength - 1;
+    IPMB_HEADER *ipmbBuffer = &(ipmbPkt->hdr);
 
     ipmbBuffer->Header.Resp.address = address;
     ipmbBuffer->Header.Resp.rqNetFnLUN = ipmbNetFnLunSet(netFn, rqLun);
@@ -209,7 +215,7 @@ std::shared_ptr<std::vector<uint8_t>> IpmbResponse::ipmbToi2cConstruct()
     ipmbBuffer->Header.Resp.completionCode = completionCode;
 
     ipmbBuffer->Header.Resp.checksum1 = ipmbChecksumCompute(
-        buffer->data(), ipmbConnectionHeaderLength - ipmbChecksumSize);
+        (uint8_t *)ipmbBuffer, ipmbConnectionHeaderLength - ipmbChecksumSize);
 
     if (data.size() > 0)
     {
@@ -217,7 +223,7 @@ std::shared_ptr<std::vector<uint8_t>> IpmbResponse::ipmbToi2cConstruct()
     }
 
     (*buffer)[bufferLength - ipmbChecksumSize] =
-        ipmbChecksumCompute(buffer->data() + ipmbChecksum2StartOffset,
+        ipmbChecksumCompute((uint8_t *)ipmbBuffer + ipmbChecksum2StartOffset,
                             (ipmbResponseDataHeaderLength + data.size()));
 
     return buffer;
@@ -252,34 +258,34 @@ void IpmbCommandFilter::addFilter(const uint8_t reqNetFn, const uint8_t cmd)
 void IpmbChannel::ipmbSendI2cFrame(std::shared_ptr<std::vector<uint8_t>> buffer,
                                    size_t retriesAttempted = 0)
 {
-    // construct i2c frame and call ioctl to send it
-    auto ipmbFrame = reinterpret_cast<IPMB_HEADER *>(buffer->data());
-    uint8_t targetAddr = ipmbIsResponse(ipmbFrame)
-                             ? ipmbFrame->Header.Resp.address
-                             : ipmbFrame->Header.Req.address;
-    io.post([this, buffer, retriesAttempted, targetAddr]() {
-        ioWrite ioData(*buffer);
-        boost::system::error_code ec;
-        i2cMasterSocket.io_control(ioData, ec);
-        if (ec)
-        {
-            size_t currentRetryCnt = retriesAttempted;
-            if (currentRetryCnt > ipmbI2cNumberOfRetries)
+    IPMB_PKT *ipmbPkt = reinterpret_cast<IPMB_PKT *>(buffer->data());
+    uint8_t targetAddr = ipmbIsResponse(&(ipmbPkt->hdr))
+                             ? ipmbPkt->hdr.Header.Resp.address
+                             : ipmbPkt->hdr.Header.Req.address;
+    boost::asio::async_write(
+        i2cSlaveDescriptor, boost::asio::buffer(*buffer),
+        [this, buffer, retriesAttempted,
+         targetAddr](const boost::system::error_code &ec, size_t bytesSent) {
+            if (ec)
             {
-                std::string msgToLog =
-                    "ipmbSendI2cFrame: sent to I2C failed after retries."
-                    " busId=" +
-                    std::to_string(ipmbBusId) +
-                    ", targetAddr=" + std::to_string(targetAddr) +
-                    ", error=" + ec.message();
-                phosphor::logging::log<phosphor::logging::level::ERR>(
-                    msgToLog.c_str());
-                return;
+                size_t currentRetryCnt = retriesAttempted;
+
+                if (currentRetryCnt > ipmbI2cNumberOfRetries)
+                {
+                    std::string msgToLog =
+                        "ipmbSendI2cFrame: send to I2C failed after retries."
+                        " busId=" +
+                        std::to_string(ipmbBusId) +
+                        ", targetAddr=" + std::to_string(targetAddr) +
+                        ", error=" + ec.message();
+                    phosphor::logging::log<phosphor::logging::level::ERR>(
+                        msgToLog.c_str());
+                    return;
+                }
+                currentRetryCnt++;
+                ipmbSendI2cFrame(buffer, currentRetryCnt);
             }
-            currentRetryCnt++;
-            ipmbSendI2cFrame(buffer, currentRetryCnt);
-        }
-    });
+        });
 }
 
 /**
@@ -344,10 +350,15 @@ void IpmbChannel::responseMatch(std::unique_ptr<IpmbResponse> &response)
 void IpmbChannel::processI2cEvent()
 {
     std::array<uint8_t, ipmbMaxFrameLength> buffer{};
-    auto ipmbFrame = reinterpret_cast<IPMB_HEADER *>(buffer.data());
+    IPMB_PKT *ipmbPkt = reinterpret_cast<IPMB_PKT *>(buffer.data());
+    IPMB_HEADER *ipmbFrame = &(ipmbPkt->hdr);
 
     lseek(ipmbi2cSlaveFd, 0, SEEK_SET);
     int r = read(ipmbi2cSlaveFd, buffer.data(), ipmbMaxFrameLength);
+
+    /* Substract first byte len size from total frame length */
+    r--;
+
     if ((r < ipmbMinFrameLength) || (r > ipmbMaxFrameLength))
     {
         goto end;
@@ -491,8 +502,8 @@ void IpmbChannel::processI2cEvent()
     }
 
 end:
-    i2cSlaveSocket.async_wait(
-        boost::asio::ip::tcp::socket::wait_error,
+    i2cSlaveDescriptor.async_wait(
+        boost::asio::posix::descriptor_base::wait_read,
         [this](const boost::system::error_code &ec) {
             if (ec)
             {
@@ -509,20 +520,19 @@ IpmbChannel::IpmbChannel(boost::asio::io_service &io,
                          uint8_t ipmbBmcSlaveAddress,
                          uint8_t ipmbRqSlaveAddress, ipmbChannelType type,
                          std::shared_ptr<IpmbCommandFilter> commandFilter) :
-    i2cSlaveSocket(io),
-    i2cMasterSocket(io), ipmbBmcSlaveAddress(ipmbBmcSlaveAddress),
+    i2cSlaveDescriptor(io),
+    ipmbBmcSlaveAddress(ipmbBmcSlaveAddress),
     ipmbRqSlaveAddress(ipmbRqSlaveAddress), type(type),
     commandFilter(commandFilter)
 {
 }
 
-int IpmbChannel::ipmbChannelInit(const char *ipmbI2cSlave,
-                                 const char *ipmbI2cMaster)
+int IpmbChannel::ipmbChannelInit(const char *ipmbI2cSlave)
 {
-    // extract bus id from master path and save
-    std::string ipmbI2cMasterStr(ipmbI2cMaster);
-    auto findHyphen = ipmbI2cMasterStr.find("-");
-    std::string busStr = ipmbI2cMasterStr.substr(findHyphen + 1);
+    // extract bus id from slave path and save
+    std::string ipmbI2cSlaveStr(ipmbI2cSlave);
+    auto findHyphen = ipmbI2cSlaveStr.find("-");
+    std::string busStr = ipmbI2cSlaveStr.substr(findHyphen + 1);
     try
     {
         ipmbBusId = std::stoi(busStr);
@@ -530,18 +540,18 @@ int IpmbChannel::ipmbChannelInit(const char *ipmbI2cSlave,
     catch (std::invalid_argument)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
-            "ipmbChannelInit: invalid bus id in master-path config");
+            "ipmbChannelInit: invalid bus id in slave-path config");
         return -1;
     }
 
     // Check if sysfs has device. If not, enable I2C slave driver by command
-    // echo "slave-mqueue 0x1010" > /sys/bus/i2c/devices/i2c-0/new_device
+    // echo "ipmb-dev 0x1010" > /sys/bus/i2c/devices/i2c-0/new_device
     bool hasSysfs = std::filesystem::exists(ipmbI2cSlave);
     if (!hasSysfs)
     {
         std::string deviceFileName =
             "/sys/bus/i2c/devices/i2c-" + busStr + "/new_device";
-        std::string para = "slave-mqueue 0x1010"; // init with BMC addr 0x20
+        std::string para = "ipmb-dev 0x1010"; // init with BMC addr 0x20
         std::fstream deviceFile;
         deviceFile.open(deviceFileName, std::ios::out);
         if (!deviceFile.good())
@@ -554,8 +564,8 @@ int IpmbChannel::ipmbChannelInit(const char *ipmbI2cSlave,
         deviceFile.close();
     }
 
-    // open fd to i2c slave device
-    ipmbi2cSlaveFd = open(ipmbI2cSlave, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
+    // open fd to i2c slave device for read write
+    ipmbi2cSlaveFd = open(ipmbI2cSlave, O_RDWR | O_NONBLOCK | O_CLOEXEC);
     if (ipmbi2cSlaveFd < 0)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -563,34 +573,10 @@ int IpmbChannel::ipmbChannelInit(const char *ipmbI2cSlave,
         return -1;
     }
 
-    // open fd to i2c master device
-    ipmbi2cMasterFd = open(ipmbI2cMaster, O_RDWR | O_NONBLOCK);
-    if (ipmbi2cMasterFd < 0)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "ipmbChannelInit: error opening ipmbI2cMaster");
-        close(ipmbi2cSlaveFd);
-        ipmbi2cSlaveFd = 0;
-        return -1;
-    }
+    i2cSlaveDescriptor.assign(ipmbi2cSlaveFd);
 
-    // set slave address of recipient
-    if (ioctl(ipmbi2cMasterFd, I2C_SLAVE,
-              ipmbAddressTo7BitSet(ipmbRqSlaveAddress)) < 0)
-    {
-        phosphor::logging::log<phosphor::logging::level::ERR>(
-            "ipmbChannelInit: error setting ipmbi2cMasterFd slave address");
-        close(ipmbi2cSlaveFd);
-        close(ipmbi2cMasterFd);
-        ipmbi2cSlaveFd = 0;
-        ipmbi2cMasterFd = 0;
-        return -1;
-    }
-
-    i2cMasterSocket.assign(ipmbi2cMasterFd);
-    i2cSlaveSocket.assign(boost::asio::ip::tcp::v4(), ipmbi2cSlaveFd);
-    i2cSlaveSocket.async_wait(
-        boost::asio::ip::tcp::socket::wait_error,
+    i2cSlaveDescriptor.async_wait(
+        boost::asio::posix::descriptor_base::wait_read,
         [this](const boost::system::error_code &ec) {
             if (ec)
             {
@@ -609,7 +595,7 @@ int IpmbChannel::ipmbChannelUpdateSlaveAddress(const uint8_t newBmcSlaveAddr)
 {
     if (ipmbi2cSlaveFd > 0)
     {
-        i2cSlaveSocket.close();
+        i2cSlaveDescriptor.close();
         close(ipmbi2cSlaveFd);
         ipmbi2cSlaveFd = 0;
     }
@@ -634,14 +620,14 @@ int IpmbChannel::ipmbChannelUpdateSlaveAddress(const uint8_t newBmcSlaveAddr)
     deviceFile.close();
 
     // enable new I2C slave driver by command:
-    //      echo "slave-mqueue 0x1012" > /sys/bus/i2c/devices/i2c-0/new_device
+    //      echo "ipmb-dev 0x1012" > /sys/bus/i2c/devices/i2c-0/new_device
     deviceFileName =
         "/sys/bus/i2c/devices/i2c-" + std::to_string(ipmbBusId) + "/new_device";
     std::ostringstream hex;
     uint16_t addr = 0x1000 + (newBmcSlaveAddr >> 1);
     hex << std::hex << static_cast<uint16_t>(addr);
     const std::string &addressHexStr = hex.str();
-    para = "slave-mqueue 0x" + addressHexStr;
+    para = "ipmb-dev 0x" + addressHexStr;
     deviceFile.open(deviceFileName, std::ios::out);
     if (!deviceFile.good())
     {
@@ -654,11 +640,8 @@ int IpmbChannel::ipmbChannelUpdateSlaveAddress(const uint8_t newBmcSlaveAddr)
     deviceFile.close();
 
     // open fd to i2c slave device
-    std::string ipmbI2cSlaveStr = "/sys/bus/i2c/devices/" +
-                                  std::to_string(ipmbBusId) + "-" +
-                                  addressHexStr + "/slave-mqueue";
-    ipmbi2cSlaveFd =
-        open(ipmbI2cSlaveStr.c_str(), O_RDONLY | O_NONBLOCK | O_CLOEXEC);
+    std::string ipmbI2cSlaveStr = "/dev/ipmb-" + std::to_string(ipmbBusId);
+    ipmbi2cSlaveFd = open(ipmbI2cSlaveStr.c_str(), O_RDWR | O_NONBLOCK);
     if (ipmbi2cSlaveFd < 0)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
@@ -667,9 +650,9 @@ int IpmbChannel::ipmbChannelUpdateSlaveAddress(const uint8_t newBmcSlaveAddr)
     }
 
     // start to receive i2c data as slave
-    i2cSlaveSocket.assign(boost::asio::ip::tcp::v4(), ipmbi2cSlaveFd);
-    i2cSlaveSocket.async_wait(
-        boost::asio::ip::tcp::socket::wait_error,
+    i2cSlaveDescriptor.assign(ipmbi2cSlaveFd);
+    i2cSlaveDescriptor.async_wait(
+        boost::asio::posix::descriptor_base::wait_read,
         [this](const boost::system::error_code &ec) {
             if (ec)
             {
@@ -733,11 +716,8 @@ std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>
 
         for (; i2cRetryCnt < ipmbI2cNumberOfRetries; i2cRetryCnt++)
         {
-            boost::asio::async_write(
-                i2cMasterSocket,
-                boost::asio::buffer(buffer.data() + ipmbAddressSize,
-                                    buffer.size() - ipmbAddressSize),
-                yield[ec]);
+            boost::asio::async_write(i2cSlaveDescriptor,
+                                     boost::asio::buffer(buffer), yield[ec]);
 
             if (ec)
             {
@@ -816,7 +796,6 @@ static int initializeChannels()
         for (const auto &channelConfig : data["channels"])
         {
             const std::string &typeConfig = channelConfig["type"];
-            const std::string &masterPath = channelConfig["master-path"];
             const std::string &slavePath = channelConfig["slave-path"];
             uint8_t bmcAddr = channelConfig["bmc-addr"];
             uint8_t reqAddr = channelConfig["remote-addr"];
@@ -824,8 +803,7 @@ static int initializeChannels()
 
             auto channel = ipmbChannels.emplace(ipmbChannels.end(), io, bmcAddr,
                                                 reqAddr, type, commandFilter);
-            if (channel->ipmbChannelInit(slavePath.c_str(),
-                                         masterPath.c_str()) < 0)
+            if (channel->ipmbChannelInit(slavePath.c_str()) < 0)
             {
                 phosphor::logging::log<phosphor::logging::level::ERR>(
                     "initializeChannels: channel initialization failed");

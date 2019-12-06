@@ -66,12 +66,13 @@ constexpr size_t ipmbConnectionHeaderLength = 3;
 constexpr size_t ipmbResponseDataHeaderLength = 4;
 constexpr size_t ipmbRequestDataHeaderLength = 3;
 constexpr size_t ipmbAddressSize = 1;
+constexpr size_t ipmbPktLenSize = 1;
 constexpr size_t ipmbChecksumSize = 1;
 constexpr size_t ipmbChecksum2StartOffset = 3;
 constexpr size_t ipmbMinFrameLength = 7;
-constexpr size_t ipmbMaxFrameLength = ipmbConnectionHeaderLength +
-                                      ipmbResponseDataHeaderLength +
-                                      ipmbChecksumSize + ipmbMaxDataSize;
+constexpr size_t ipmbMaxFrameLength =
+    ipmbPktLenSize + ipmbConnectionHeaderLength + ipmbResponseDataHeaderLength +
+    ipmbChecksumSize + ipmbMaxDataSize;
 
 /**
  * @brief Ipmb misc
@@ -265,7 +266,7 @@ class IpmbChannel
     IpmbChannel(const IpmbChannel &) = delete;
     IpmbChannel &operator=(IpmbChannel const &) = delete;
 
-    int ipmbChannelInit(const char *ipmbI2cSlave, const char *ipmbI2cMaster);
+    int ipmbChannelInit(const char *ipmbI2cSlave);
 
     int ipmbChannelUpdateSlaveAddress(const uint8_t newBmcSlaveAddr);
 
@@ -291,10 +292,8 @@ class IpmbChannel
                    std::shared_ptr<IpmbRequest> requestToSend);
 
   private:
-    boost::asio::ip::tcp::socket i2cSlaveSocket;
-    boost::asio::posix::stream_descriptor i2cMasterSocket;
+    boost::asio::posix::stream_descriptor i2cSlaveDescriptor;
 
-    int ipmbi2cMasterFd;
     int ipmbi2cSlaveFd;
 
     uint8_t ipmbBmcSlaveAddress;
