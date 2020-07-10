@@ -262,7 +262,8 @@ class IpmbChannel
 {
   public:
     IpmbChannel(boost::asio::io_service &io, uint8_t ipmbBmcSlaveAddress,
-                uint8_t ipmbRqSlaveAddress, ipmbChannelType type,
+                uint8_t ipmbRqSlaveAddress, uint8_t channelIdx,
+                ipmbChannelType type,
                 std::shared_ptr<IpmbCommandFilter> commandFilter);
 
     IpmbChannel(const IpmbChannel &) = delete;
@@ -277,6 +278,8 @@ class IpmbChannel
     ipmbChannelType getChannelType();
 
     uint8_t getBusId();
+
+    uint8_t getChannelIdx();
 
     uint8_t getBmcSlaveAddress();
 
@@ -301,6 +304,7 @@ class IpmbChannel
     uint8_t ipmbBmcSlaveAddress;
     uint8_t ipmbRqSlaveAddress;
     uint8_t ipmbBusId;
+    uint8_t channelIdx;
 
     ipmbChannelType type;
 
