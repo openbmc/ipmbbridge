@@ -428,8 +428,13 @@ void IpmbChannel::processI2cEvent()
         auto ipmbMessageReceived = IpmbRequest();
         ipmbMessageReceived.i2cToIpmbConstruct(ipmbFrame, r);
 
+        uint8_t hostId = getHostId();
+
         std::map<std::string, std::variant<int>> options{
-            {"rqSA", ipmbAddressTo7BitSet(ipmbMessageReceived.rqSA)}};
+            {"rqSA", ipmbAddressTo7BitSet(ipmbMessageReceived.rqSA)},
+            {"host1", hostId},
+        };
+
         using IpmiDbusRspType = std::tuple<uint8_t, uint8_t, uint8_t, uint8_t,
                                            std::vector<uint8_t>>;
         conn->async_method_call(
@@ -518,11 +523,12 @@ end:
 
 IpmbChannel::IpmbChannel(boost::asio::io_service &io,
                          uint8_t ipmbBmcSlaveAddress,
-                         uint8_t ipmbRqSlaveAddress, ipmbChannelType type,
+                         uint8_t ipmbRqSlaveAddress, uint8_t hostId,
+                         ipmbChannelType type,
                          std::shared_ptr<IpmbCommandFilter> commandFilter) :
     i2cSlaveDescriptor(io),
     ipmbBmcSlaveAddress(ipmbBmcSlaveAddress),
-    ipmbRqSlaveAddress(ipmbRqSlaveAddress), type(type),
+    ipmbRqSlaveAddress(ipmbRqSlaveAddress), hostId(hostId), type(type),
     commandFilter(commandFilter)
 {
 }
@@ -684,6 +690,11 @@ uint8_t IpmbChannel::getRqSlaveAddress()
     return ipmbRqSlaveAddress;
 }
 
+uint8_t IpmbChannel::getHostId()
+{
+    return hostId;
+}
+
 ipmbChannelType IpmbChannel::getChannelType()
 {
     return type;
@@ -792,6 +803,7 @@ static int initializeChannels()
     }
     try
     {
+        uint8_t hostId = 0;
         auto data = nlohmann::json::parse(configFile, nullptr);
         for (const auto &channelConfig : data["channels"])
         {
@@ -799,10 +811,16 @@ static int initializeChannels()
             const std::string &slavePath = channelConfig["slave-path"];
             uint8_t bmcAddr = channelConfig["bmc-addr"];
             uint8_t reqAddr = channelConfig["remote-addr"];
+
+            if (channelConfig.contains("host"))
+            {
+                hostId = channelConfig["host"];
+            }
             ipmbChannelType type = ipmbChannelTypeMap.at(typeConfig);
 
-            auto channel = ipmbChannels.emplace(ipmbChannels.end(), io, bmcAddr,
-                                                reqAddr, type, commandFilter);
+            auto channel =
+                ipmbChannels.emplace(ipmbChannels.end(), io, bmcAddr, reqAddr,
+                                     hostId, type, commandFilter);
             if (channel->ipmbChannelInit(slavePath.c_str()) < 0)
             {
                 phosphor::logging::log<phosphor::logging::level::ERR>(
