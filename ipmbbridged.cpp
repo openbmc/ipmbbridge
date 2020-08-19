@@ -429,8 +429,12 @@ void IpmbChannel::processI2cEvent()
         auto ipmbMessageReceived = IpmbRequest();
         ipmbMessageReceived.i2cToIpmbConstruct(ipmbFrame, r);
 
+        int devId = getDevIndex();
+
         std::map<std::string, std::variant<int>> options{
-            {"rqSA", ipmbAddressTo7BitSet(ipmbMessageReceived.rqSA)}};
+            {"rqSA", ipmbAddressTo7BitSet(ipmbMessageReceived.rqSA)},
+            {"channelIdx", devId}};
+
         using IpmiDbusRspType = std::tuple<uint8_t, uint8_t, uint8_t, uint8_t,
                                            std::vector<uint8_t>>;
         conn->async_method_call(
