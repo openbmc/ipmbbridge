@@ -370,7 +370,7 @@ void IpmbChannel::processI2cEvent()
         goto end;
     }
 
-    // if it is broadcast message from ipmb channel, send out dbus signal
+    // if it is message from ipmb channel, send out dbus signal
     if (ipmbFrame->Header.Req.address == broadcastAddress &&
         getChannelType() == ipmbChannelType::ipmb)
     {
