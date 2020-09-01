@@ -19,6 +19,7 @@
 #include "ipmbutils.hpp"
 
 #include <boost/algorithm/string/replace.hpp>
+#include <boost/asio/write.hpp>
 #include <filesystem>
 #include <fstream>
 #include <nlohmann/json.hpp>
