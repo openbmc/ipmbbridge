@@ -2,8 +2,11 @@ cmake_minimum_required (VERSION 3.5 FATAL_ERROR)
 project (ipmbbridged CXX)
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-rtti")
+
+# Temporarily disable rtti
+# See https://github.com/chriskohlhoff/asio/issues/533
+#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
+#set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-rtti")
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 find_package (Boost REQUIRED)
