@@ -384,7 +384,7 @@ void IpmbChannel::processI2cEvent()
     }
 
     // copy frame to ipmib message buffer
-    else if (ipmbIsResponse(ipmbFrame))
+    if (ipmbIsResponse(ipmbFrame))
     {
         std::unique_ptr<IpmbResponse> ipmbMessageReceived =
             std::make_unique<IpmbResponse>();
