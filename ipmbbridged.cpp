@@ -541,7 +541,7 @@ int IpmbChannel::ipmbChannelInit(const char *ipmbI2cSlave)
     {
         ipmbBusId = std::stoi(busStr);
     }
-    catch (std::invalid_argument)
+    catch (const std::invalid_argument &)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "ipmbChannelInit: invalid bus id in slave-path config");
@@ -833,13 +833,13 @@ static int initializeChannels()
             }
         }
     }
-    catch (nlohmann::json::exception &e)
+    catch (const nlohmann::json::exception &e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "initializeChannels: Error parsing config file");
         return -1;
     }
-    catch (std::out_of_range &e)
+    catch (const std::out_of_range &e)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
             "initializeChannels: Error invalid type");
