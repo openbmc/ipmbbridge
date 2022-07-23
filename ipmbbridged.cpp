@@ -376,7 +376,7 @@ void IpmbChannel::processI2cEvent()
     {
         auto ipmbMessageReceived = IpmbRequest();
         ipmbMessageReceived.i2cToIpmbConstruct(ipmbFrame, r);
-        sdbusplus::message::message msg =
+        sdbusplus::message_t msg =
             conn->new_signal(ipmbObj, ipmbDbusIntf, "receiveBroadcast");
         msg.append(ipmbMessageReceived.netFn, ipmbMessageReceived.cmd,
                    ipmbMessageReceived.data);
@@ -891,8 +891,8 @@ auto ipmbHandleRequest = [](boost::asio::yield_context yield,
 void addUpdateSlaveAddrHandler()
 {
     // callback to handle dbus signal of updating slave addr
-    std::function<void(sdbusplus::message::message &)> updateSlaveAddrHandler =
-        [](sdbusplus::message::message &message) {
+    std::function<void(sdbusplus::message_t &)> updateSlaveAddrHandler =
+        [](sdbusplus::message_t &message) {
             uint8_t reqChannel, busId, slaveAddr;
 
             // valid source of signal, check whether from multi-node manager
@@ -932,16 +932,16 @@ void addUpdateSlaveAddrHandler()
             channel->ipmbChannelUpdateSlaveAddress(slaveAddr);
         };
 
-    static auto match = std::make_unique<sdbusplus::bus::match::match>(
-        static_cast<sdbusplus::bus::bus &>(*conn),
+    static auto match = std::make_unique<sdbusplus::bus::match_t>(
+        static_cast<sdbusplus::bus_t &>(*conn),
         "type='signal',member='updateBmcSlaveAddr',", updateSlaveAddrHandler);
 }
 
 void addSendBroadcastHandler()
 {
     // callback to handle dbus signal of sending broadcast message
-    std::function<void(sdbusplus::message::message &)> sendBroadcastHandler =
-        [](sdbusplus::message::message &message) {
+    std::function<void(sdbusplus::message_t &)> sendBroadcastHandler =
+        [](sdbusplus::message_t &message) {
             uint8_t reqChannel, netFn, lun, cmd;
             std::vector<uint8_t> dataReceived;
             message.read(reqChannel, netFn, lun, cmd, dataReceived);
@@ -976,8 +976,8 @@ void addSendBroadcastHandler()
             channel->ipmbSendI2cFrame(buffer);
         };
 
-    static auto match = std::make_unique<sdbusplus::bus::match::match>(
-        static_cast<sdbusplus::bus::bus &>(*conn),
+    static auto match = std::make_unique<sdbusplus::bus::match_t>(
+        static_cast<sdbusplus::bus_t &>(*conn),
         "type='signal',member='sendBroadcast',", sendBroadcastHandler);
 }
 
