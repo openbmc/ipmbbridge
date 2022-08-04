@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1ef7b388_ecec6d26",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2022-08-04T16:49:33Z",
+      "side": 1,
+      "message": "Was kinda thinking vernon had taken over this repo, but I guess I\u0027ll step up.  I don\u0027t currently have a system that uses this, so we\u0027ll have to sort that out if this starts getting a lot of patches.",
+      "revId": "2cd45239cd630a58cfd6c79e5eb506cdcbaa5392",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
