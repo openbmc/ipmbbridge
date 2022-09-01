@@ -32,7 +32,6 @@
 # data within them will be kept sorted.
 
 owners:
-- dawid.frycki@intel.com
 - ed@tanous.net
 - vernon.mauery@linux.intel.com
 
@@ -41,9 +40,6 @@ reviewers:
 matchers:
 
 openbmc:
-- name: Dawid Frycki
-  email: dawid.frycki@intel.com
-  discord: dfrycki
 - name: Ed Tanous
   email: ed@tanous.net
   discord: edtanous
