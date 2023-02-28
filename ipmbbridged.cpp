@@ -19,6 +19,7 @@
 #include "ipmbutils.hpp"
 
 #include <boost/algorithm/string/replace.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/write.hpp>
 #include <filesystem>
 #include <fstream>
@@ -34,7 +35,7 @@ static constexpr const char *ipmbBus = "xyz.openbmc_project.Ipmi.Channel.Ipmb";
 static constexpr const char *ipmbObj = "/xyz/openbmc_project/Ipmi/Channel/Ipmb";
 static constexpr const char *ipmbDbusIntf = "org.openbmc.Ipmb";
 
-boost::asio::io_service io;
+boost::asio::io_context io;
 auto conn = std::make_shared<sdbusplus::asio::connection>(io);
 
 static std::list<IpmbChannel> ipmbChannels;
@@ -520,7 +521,7 @@ end:
         });
 }
 
-IpmbChannel::IpmbChannel(boost::asio::io_service &io,
+IpmbChannel::IpmbChannel(boost::asio::io_context &io,
                          uint8_t ipmbBmcSlaveAddress,
                          uint8_t ipmbRqSlaveAddress, uint8_t channelIdx,
                          std::shared_ptr<IpmbCommandFilter> commandFilter) :

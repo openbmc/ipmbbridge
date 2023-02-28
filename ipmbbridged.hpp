@@ -15,7 +15,7 @@
 
 #include "ipmbdefines.hpp"
 
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/container/flat_set.hpp>
 #include <optional>
@@ -261,7 +261,7 @@ constexpr uint8_t ipmbReqNetFnFromRespNetFn(uint8_t reqNetFn)
 class IpmbChannel
 {
   public:
-    IpmbChannel(boost::asio::io_service &io, uint8_t ipmbBmcSlaveAddress,
+    IpmbChannel(boost::asio::io_context &io, uint8_t ipmbBmcSlaveAddress,
                 uint8_t ipmbRqSlaveAddress, uint8_t channelIdx,
                 std::shared_ptr<IpmbCommandFilter> commandFilter);
 
