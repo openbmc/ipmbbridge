@@ -24,7 +24,7 @@
 /**
  * @brief Ipmb utils for checksum
  */
-bool ipmbChecksumValidate(uint8_t *data, uint8_t length)
+bool ipmbChecksumValidate(uint8_t* data, uint8_t length)
 {
     uint8_t checksum = 0;
 
@@ -47,7 +47,7 @@ bool ipmbChecksumValidate(uint8_t *data, uint8_t length)
     }
 }
 
-uint8_t ipmbChecksumCompute(uint8_t *data, uint8_t length)
+uint8_t ipmbChecksumCompute(uint8_t* data, uint8_t length)
 {
     uint8_t checksum = 0;
 
@@ -63,20 +63,20 @@ uint8_t ipmbChecksumCompute(uint8_t *data, uint8_t length)
     return checksum;
 }
 
-inline bool ipmbConnectionHeaderChecksumValidate(IPMB_HEADER *ipmbHeader)
+inline bool ipmbConnectionHeaderChecksumValidate(IPMB_HEADER* ipmbHeader)
 {
-    return ipmbChecksumValidate(reinterpret_cast<uint8_t *>(ipmbHeader),
+    return ipmbChecksumValidate(reinterpret_cast<uint8_t*>(ipmbHeader),
                                 ipmbConnectionHeaderLength);
 }
 
-inline bool ipmbDataChecksumValidate(IPMB_HEADER *ipmbHeader, uint8_t length)
+inline bool ipmbDataChecksumValidate(IPMB_HEADER* ipmbHeader, uint8_t length)
 {
     return ipmbChecksumValidate(
-        (reinterpret_cast<uint8_t *>(ipmbHeader) + ipmbConnectionHeaderLength),
+        (reinterpret_cast<uint8_t*>(ipmbHeader) + ipmbConnectionHeaderLength),
         (length - ipmbConnectionHeaderLength));
 }
 
-bool isFrameValid(IPMB_HEADER *frame, uint8_t length)
+bool isFrameValid(IPMB_HEADER* frame, uint8_t length)
 {
     bool frameValid = ipmbConnectionHeaderChecksumValidate(frame);
     if (false == frameValid)
