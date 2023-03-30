@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "40a6768b_910d18e4",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2023-03-30T22:01:04Z",
+      "side": 1,
+      "message": "Jason beat you to it: https://gerrit.openbmc.org/c/openbmc/ipmbbridge/+/62028",
+      "revId": "010b409ede0a4e60e2adbd3648694b4ed3ed8728",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
