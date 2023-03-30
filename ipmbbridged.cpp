@@ -316,11 +316,7 @@ bool IpmbChannel::seqNumGet(uint8_t& seq)
 
     for (int i = 0; i < ipmbMaxOutstandingRequestsCount; i++)
     {
-        seqNum = ++seqNum & ipmbSeqMask;
-        if (seqNum == ipmbMaxOutstandingRequestsCount)
-        {
-            seqNum = 0;
-        }
+        seqNum = (seqNum + 1) % ipmbMaxOutstandingRequestsCount;
 
         if (outstandingRequests[seqNum] == nullptr)
         {
