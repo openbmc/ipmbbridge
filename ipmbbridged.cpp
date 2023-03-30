@@ -354,12 +354,19 @@ void IpmbChannel::processI2cEvent()
     IPMB_HEADER* ipmbFrame = &(ipmbPkt->hdr);
 
     lseek(ipmbi2cSlaveFd, 0, SEEK_SET);
-    int r = read(ipmbi2cSlaveFd, buffer.data(), ipmbMaxFrameLength);
+    ssize_t r = read(ipmbi2cSlaveFd, buffer.data(), ipmbMaxFrameLength);
+
+    // Handle error cases.
+    if (r < 0)
+    {
+        goto end;
+    }
 
     /* Substract first byte len size from total frame length */
     r--;
 
-    if ((r < ipmbMinFrameLength) || (r > ipmbMaxFrameLength))
+    if ((r < static_cast<ssize_t>(ipmbMinFrameLength)) ||
+        (r > static_cast<ssize_t>(ipmbMaxFrameLength)))
     {
         goto end;
     }
