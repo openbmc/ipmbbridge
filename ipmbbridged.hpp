@@ -351,9 +351,8 @@ class ioWrite
     }
 
   private:
-    int myname;
-    i2c_rdwr_ioctl_data msgRdwr = {0};
-    i2c_msg i2cmsg[1] = {0};
+    i2c_rdwr_ioctl_data msgRdwr = {};
+    i2c_msg i2cmsg[1] = {};
 };
 
 #endif
