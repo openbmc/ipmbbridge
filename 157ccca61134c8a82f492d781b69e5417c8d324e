@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bf741d11_36f844f1",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 368,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2023-03-30T22:05:29Z",
+      "side": 1,
+      "message": "Can ipmbMinFrameLength just change to a type of ssize_t?  This looks like the only usage.",
+      "range": {
+        "startLine": 368,
+        "startChar": 34,
+        "endLine": 368,
+        "endChar": 52
+      },
+      "revId": "157ccca61134c8a82f492d781b69e5417c8d324e",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
