@@ -23,6 +23,7 @@
 #include <boost/asio/write.hpp>
 #include <filesystem>
 #include <fstream>
+#include <list>
 #include <nlohmann/json.hpp>
 #include <phosphor-logging/log.hpp>
 #include <tuple>
