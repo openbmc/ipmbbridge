@@ -83,7 +83,6 @@ constexpr size_t ipmbMaxFrameLength =
  */
 constexpr uint8_t ipmbNetFnResponseMask = 0x01;
 constexpr uint8_t ipmbLunMask = 0x03;
-constexpr uint8_t ipmbSeqMask = 0x3F;
 constexpr uint8_t ipmbRsLun = 0x0;
 
 /**
