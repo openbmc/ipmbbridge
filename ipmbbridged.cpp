@@ -266,10 +266,10 @@ void IpmbChannel::ipmbSendI2cFrame(std::shared_ptr<std::vector<uint8_t>> buffer,
     uint8_t targetAddr = ipmbIsResponse(&(ipmbPkt->hdr))
                              ? ipmbPkt->hdr.Header.Resp.address
                              : ipmbPkt->hdr.Header.Req.address;
-    boost::asio::async_write(
-        i2cSlaveDescriptor, boost::asio::buffer(*buffer),
-        [this, buffer, retriesAttempted,
-         targetAddr](const boost::system::error_code& ec, size_t bytesSent) {
+    boost::asio::async_write(i2cSlaveDescriptor, boost::asio::buffer(*buffer),
+                             [this, buffer, retriesAttempted,
+                              targetAddr](const boost::system::error_code& ec,
+                                          size_t /* bytesSent */) {
         if (ec)
         {
             size_t currentRetryCnt = retriesAttempted;
@@ -289,7 +289,7 @@ void IpmbChannel::ipmbSendI2cFrame(std::shared_ptr<std::vector<uint8_t>> buffer,
             currentRetryCnt++;
             ipmbSendI2cFrame(buffer, currentRetryCnt);
         }
-        });
+    });
 }
 
 /**
@@ -986,7 +986,7 @@ void addSendBroadcastHandler()
 /**
  * @brief Main
  */
-int main(int argc, char* argv[])
+int main()
 {
     conn->request_name(ipmbBus);
 
