@@ -18,12 +18,14 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/container/flat_set.hpp>
-#include <optional>
 #include <sdbusplus/asio/object_server.hpp>
 #include <sdbusplus/message.hpp>
+
+#include <optional>
 #include <vector>
 
-extern "C" {
+extern "C"
+{
 #include <i2c/smbus.h>
 #include <linux/i2c-dev.h>
 }
@@ -133,7 +135,7 @@ constexpr uint8_t ipmbLunFromSeqLunGet(uint8_t seqNumLun)
 /**
  * @brief Ipmb checkers
  */
-constexpr bool ipmbIsResponse(IPMB_HEADER *ipmbHeader)
+constexpr bool ipmbIsResponse(IPMB_HEADER* ipmbHeader)
 {
     return ipmbNetFnGet(ipmbHeader->Header.Resp.rqNetFnLUN) &
            ipmbNetFnResponseMask;
@@ -177,9 +179,9 @@ struct IpmbResponse
 
     IpmbResponse(uint8_t address, uint8_t netFn, uint8_t rqLun, uint8_t rsSA,
                  uint8_t seq, uint8_t rsLun, uint8_t cmd,
-                 uint8_t completionCode, const std::vector<uint8_t> &inputData);
+                 uint8_t completionCode, const std::vector<uint8_t>& inputData);
 
-    void i2cToIpmbConstruct(IPMB_HEADER *ipmbBuffer, size_t bufferLength);
+    void i2cToIpmbConstruct(IPMB_HEADER* ipmbBuffer, size_t bufferLength);
 
     std::shared_ptr<std::vector<uint8_t>> ipmbToi2cConstruct();
 };
@@ -208,10 +210,10 @@ struct IpmbRequest
 
     IpmbRequest(uint8_t address, uint8_t netFn, uint8_t rsLun, uint8_t rqSA,
                 uint8_t seq, uint8_t rqLun, uint8_t cmd,
-                const std::vector<uint8_t> &inputData);
+                const std::vector<uint8_t>& inputData);
 
-    IpmbRequest(const IpmbRequest &) = delete;
-    IpmbRequest &operator=(IpmbRequest const &) = delete;
+    IpmbRequest(const IpmbRequest&) = delete;
+    IpmbRequest& operator=(const IpmbRequest&) = delete;
 
     std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>
         returnMatchedResponse();
@@ -219,9 +221,9 @@ struct IpmbRequest
     std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>
         returnStatusResponse(int status);
 
-    void i2cToIpmbConstruct(IPMB_HEADER *ipmbBuffer, size_t bufferLength);
+    void i2cToIpmbConstruct(IPMB_HEADER* ipmbBuffer, size_t bufferLength);
 
-    int ipmbToi2cConstruct(std::vector<uint8_t> &buffer);
+    int ipmbToi2cConstruct(std::vector<uint8_t>& buffer);
 };
 
 /**
@@ -261,18 +263,18 @@ constexpr uint8_t ipmbReqNetFnFromRespNetFn(uint8_t reqNetFn)
 class IpmbChannel
 {
   public:
-    IpmbChannel(boost::asio::io_context &io, uint8_t ipmbBmcSlaveAddress,
+    IpmbChannel(boost::asio::io_context& io, uint8_t ipmbBmcSlaveAddress,
                 uint8_t ipmbRqSlaveAddress, uint8_t channelIdx,
                 std::shared_ptr<IpmbCommandFilter> commandFilter);
 
-    IpmbChannel(const IpmbChannel &) = delete;
-    IpmbChannel &operator=(IpmbChannel const &) = delete;
+    IpmbChannel(const IpmbChannel&) = delete;
+    IpmbChannel& operator=(const IpmbChannel&) = delete;
 
-    int ipmbChannelInit(const char *ipmbI2cSlave);
+    int ipmbChannelInit(const char* ipmbI2cSlave);
 
     int ipmbChannelUpdateSlaveAddress(const uint8_t newBmcSlaveAddr);
 
-    bool seqNumGet(uint8_t &seq);
+    bool seqNumGet(uint8_t& seq);
 
     ipmbChannelType getChannelType();
 
@@ -294,7 +296,7 @@ class IpmbChannel
                           size_t retriesAttempted);
 
     std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>
-        requestAdd(boost::asio::yield_context &yield,
+        requestAdd(boost::asio::yield_context& yield,
                    std::shared_ptr<IpmbRequest> requestToSend);
 
   private:
@@ -316,9 +318,9 @@ class IpmbChannel
     void requestTimerCallback(std::shared_ptr<IpmbRequest> request,
                               std::shared_ptr<std::vector<uint8_t>> buffer);
 
-    void responseMatch(std::unique_ptr<IpmbResponse> &response);
+    void responseMatch(std::unique_ptr<IpmbResponse>& response);
 
-    void makeRequestInvalid(IpmbRequest &request);
+    void makeRequestInvalid(IpmbRequest& request);
 
     void makeRequestValid(std::shared_ptr<IpmbRequest> request);
 };
@@ -329,7 +331,7 @@ class IpmbChannel
 class ioWrite
 {
   public:
-    ioWrite(std::vector<uint8_t> &buffer)
+    ioWrite(std::vector<uint8_t>& buffer)
     {
         i2cmsg[0].addr = ipmbAddressTo7BitSet(buffer[0]);
         i2cmsg[0].len = buffer.size() - ipmbAddressSize;
@@ -344,7 +346,7 @@ class ioWrite
         return static_cast<int>(I2C_RDWR);
     }
 
-    void *data()
+    void* data()
     {
         return &msgRdwr;
     }
