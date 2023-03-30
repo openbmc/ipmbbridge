@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e4a2870a_b7fe6f31",
+        "filename": "ipmbdefines.hpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2023-03-30T22:10:41Z",
+      "side": 1,
+      "message": "Groan. This probably needs modernized at some point.",
+      "revId": "6c6da4fe0876be7e3aca323fca6da710d4f4fc04",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
