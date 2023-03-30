@@ -73,8 +73,8 @@ constexpr size_t ipmbAddressSize = 1;
 constexpr size_t ipmbPktLenSize = 1;
 constexpr size_t ipmbChecksumSize = 1;
 constexpr size_t ipmbChecksum2StartOffset = 3;
-constexpr size_t ipmbMinFrameLength = 7;
-constexpr size_t ipmbMaxFrameLength =
+constexpr ssize_t ipmbMinFrameLength = 7;
+constexpr ssize_t ipmbMaxFrameLength =
     ipmbPktLenSize + ipmbConnectionHeaderLength + ipmbResponseDataHeaderLength +
     ipmbChecksumSize + ipmbMaxDataSize;
 
