@@ -18,6 +18,11 @@
 
 #include <inttypes.h>
 
+// -Wpedantic doesn't like flexible array members in C++.
+// Disable it for this file.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
 #pragma pack(1)
 typedef struct _IPMB_HEADER
 {
@@ -67,4 +72,5 @@ typedef struct _IPMB_DRV_HDR
     IPMB_HEADER hdr;
 } IPMB_PKT;
 
+#pragma GCC diagnostic pop
 #endif
