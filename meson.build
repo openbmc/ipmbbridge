@@ -46,7 +46,7 @@ sdbusplus_dep = dependency('sdbusplus')
 systemd_dep = dependency('systemd')
 
 executable(
-  'ipmbbridge',
+  'ipmbbridged',
   'ipmbbridged.cpp',
   'ipmbutils.cpp',
   dependencies: [
