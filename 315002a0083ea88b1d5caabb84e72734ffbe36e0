@@ -1,0 +1,7 @@
+Code-Review+2: Vernon Mauery <vernon.mauery@linux.intel.com>
+Verified+1: OpenBMC CI <openbmcbump-ci@yahoo.com>
+Submitted-by: Vernon Mauery <vernon.mauery@linux.intel.com>
+Submitted-at: Tue, 11 Apr 2023 23:55:39 +0000
+Reviewed-on: https://gerrit.openbmc.org/c/openbmc/ipmbbridge/+/62258
+Project: openbmc/ipmbbridge
+Branch: refs/heads/master
