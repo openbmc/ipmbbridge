@@ -2,7 +2,7 @@ project(
   'ipmbbridge',
   'cpp',
   version: '0.1',
-  meson_version: '>=0.57.0',
+  meson_version: '>=0.58.0',
   default_options: [
     'warning_level=3',
     'werror=true',
@@ -61,7 +61,7 @@ executable(
 
 install_data(
   'ipmb.service',
-  install_dir: systemd_dep.get_variable(pkgconfig: 'systemdsystemunitdir'),
+  install_dir: systemd_dep.get_variable('systemdsystemunitdir'),
 )
 
 install_data(
