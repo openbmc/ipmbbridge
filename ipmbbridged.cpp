@@ -40,7 +40,8 @@ static constexpr const char* ipmbDbusIntf = "org.openbmc.Ipmb";
 boost::asio::io_context io;
 auto conn = std::make_shared<sdbusplus::asio::connection>(io);
 
-static std::list<IpmbChannel> ipmbChannels;
+static boost::container::flat_map<std::string, std::unique_ptr<IpmbChannel>>
+    ipmbChannels;
 static const std::unordered_map<std::string, ipmbChannelType>
     ipmbChannelTypeMap = {{"me", ipmbChannelType::me},
                           {"ipmb", ipmbChannelType::ipmb}};
@@ -376,6 +377,15 @@ void IpmbChannel::processI2cEvent()
         goto end;
     }
 
+    // Channels that handle different slave addresses.
+    for (const auto& [index, addr] : ipmbRqSlaveAddresses)
+    {
+        if (ipmbFrame->Header.Req.rqSA == addr)
+        {
+            channelIdx = index;
+        }
+    }
+
     // if it is message received from ipmb channel, send out dbus signal
     if (getChannelType() == ipmbChannelType::ipmb)
     {
@@ -531,8 +541,9 @@ IpmbChannel::IpmbChannel(boost::asio::io_context& io,
                          std::shared_ptr<IpmbCommandFilter> commandFilter) :
     i2cSlaveDescriptor(io),
     ipmbBmcSlaveAddress(ipmbBmcSlaveAddress),
-    ipmbRqSlaveAddress(ipmbRqSlaveAddress), channelIdx(channelIdx),
-    commandFilter(commandFilter)
+    ipmbRqSlaveAddresses(boost::container::flat_map<uint8_t, uint8_t>{
+        {channelIdx, ipmbRqSlaveAddress}}),
+    channelIdx(channelIdx), commandFilter(commandFilter)
 {}
 
 int IpmbChannel::ipmbChannelInit(const char* ipmbI2cSlave)
@@ -689,7 +700,7 @@ uint8_t IpmbChannel::getBmcSlaveAddress()
 
 uint8_t IpmbChannel::getRqSlaveAddress()
 {
-    return ipmbRqSlaveAddress;
+    return ipmbRqSlaveAddresses[channelIdx];
 }
 
 uint8_t IpmbChannel::getDevIndex()
@@ -697,14 +708,26 @@ uint8_t IpmbChannel::getDevIndex()
     return channelIdx >> 2;
 }
 
-uint8_t IpmbChannel::getChannelIdx()
+void IpmbChannel::setChannelIdx(const uint8_t index)
 {
-    return channelIdx;
+    channelIdx = index;
 }
 
 ipmbChannelType IpmbChannel::getChannelType()
 {
     return static_cast<ipmbChannelType>((channelIdx & 3));
+}
+
+boost::container::flat_map<uint8_t, uint8_t>
+    IpmbChannel::getIpmbRqSlaveAddresses()
+{
+    return ipmbRqSlaveAddresses;
+}
+
+void IpmbChannel::setIpmbRqSlaveAddresses(const uint8_t index,
+                                          const uint8_t reqAddr)
+{
+    ipmbRqSlaveAddresses[index] = reqAddr;
 }
 
 void IpmbChannel::addFilter(const uint8_t respNetFn, const uint8_t cmd)
@@ -781,15 +804,14 @@ std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>
 
 static IpmbChannel* getChannel(uint8_t reqChannel)
 {
-    auto channel = std::find_if(ipmbChannels.begin(), ipmbChannels.end(),
-                                [reqChannel](IpmbChannel& channel) {
-        return channel.getChannelIdx() == reqChannel;
-    });
-    if (channel != ipmbChannels.end())
+    for (auto& [_, channel] : ipmbChannels)
     {
-        return &(*channel);
+        if (channel->getIpmbRqSlaveAddresses().count(reqChannel))
+        {
+            channel->setChannelIdx(reqChannel);
+            return &(*channel);
+        }
     }
-
     return nullptr;
 }
 
@@ -809,7 +831,7 @@ static int initializeChannels()
     }
     try
     {
-        uint8_t devIndex = 0;
+        uint8_t channelIdx = 0;
         auto data = nlohmann::json::parse(configFile, nullptr);
         for (const auto& channelConfig : data["channels"])
         {
@@ -818,17 +840,27 @@ static int initializeChannels()
             uint8_t bmcAddr = channelConfig["bmc-addr"];
             uint8_t reqAddr = channelConfig["remote-addr"];
 
-            ipmbChannelType type = ipmbChannelTypeMap.at(typeConfig);
+            channelIdx =
+                static_cast<uint8_t>(ipmbChannelTypeMap.at(typeConfig));
 
             if (channelConfig.contains("devIndex"))
             {
-                devIndex = channelConfig["devIndex"];
+                channelIdx |= (static_cast<uint8_t>(channelConfig["devIndex"])
+                               << 2);
             }
 
+            auto it = ipmbChannels.find(typeConfig + slavePath);
+            if (it != ipmbChannels.end())
+            {
+                IpmbChannel& ipmbChannel = *(it->second);
+                ipmbChannel.setIpmbRqSlaveAddresses(channelIdx, reqAddr);
+                continue;
+            }
             auto channel = ipmbChannels.emplace(
-                ipmbChannels.end(), io, bmcAddr, reqAddr,
-                ((devIndex << 2) | static_cast<uint8_t>(type)), commandFilter);
-            if (channel->ipmbChannelInit(slavePath.c_str()) < 0)
+                typeConfig + slavePath,
+                std::make_unique<IpmbChannel>(io, bmcAddr, reqAddr, channelIdx,
+                                              commandFilter));
+            if (channel.first->second->ipmbChannelInit(slavePath.c_str()) < 0)
             {
                 phosphor::logging::log<phosphor::logging::level::ERR>(
                     "initializeChannels: channel initialization failed");

@@ -17,6 +17,7 @@
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
+#include <boost/container/flat_map.hpp>
 #include <boost/container/flat_set.hpp>
 #include <sdbusplus/asio/object_server.hpp>
 #include <sdbusplus/message.hpp>
@@ -281,11 +282,15 @@ class IpmbChannel
 
     uint8_t getDevIndex();
 
-    uint8_t getChannelIdx();
+    void setChannelIdx(const uint8_t index);
 
     uint8_t getBmcSlaveAddress();
 
     uint8_t getRqSlaveAddress();
+
+    boost::container::flat_map<uint8_t, uint8_t> getIpmbRqSlaveAddresses();
+
+    void setIpmbRqSlaveAddresses(const uint8_t index, const uint8_t reqAddr);
 
     void addFilter(const uint8_t respNetFn, const uint8_t cmd);
 
@@ -304,7 +309,11 @@ class IpmbChannel
     int ipmbi2cSlaveFd;
 
     uint8_t ipmbBmcSlaveAddress;
-    uint8_t ipmbRqSlaveAddress;
+
+    // Save the requested slave address, key: channelIdx, value:
+    // ipmbRqSlaveAddress.
+    boost::container::flat_map<uint8_t, uint8_t> ipmbRqSlaveAddresses;
+
     uint8_t ipmbBusId;
     uint8_t channelIdx;
 
