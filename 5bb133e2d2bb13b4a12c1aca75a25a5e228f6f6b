@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9398e660_f63fc799",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001367
+      },
+      "writtenOn": "2023-06-07T11:38:12Z",
+      "side": 1,
+      "message": "Due to some hardware design reasons, there are multiple ipmb devices communicating under one bus, but it is found that the configuration of multi-slave mode is currently not supported. If there is a problem with the modification, thank you for pointing out the modification.",
+      "revId": "5bb133e2d2bb13b4a12c1aca75a25a5e228f6f6b",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
