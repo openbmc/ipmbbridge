@@ -14,6 +14,7 @@
  */
 
 #include "ipmbdefines.hpp"
+#include <sys/types.h>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
@@ -21,6 +22,7 @@
 #include <sdbusplus/asio/object_server.hpp>
 #include <sdbusplus/message.hpp>
 
+#include <cstdint>
 #include <optional>
 #include <vector>
 
@@ -299,6 +301,13 @@ class IpmbChannel
                    std::shared_ptr<IpmbRequest> requestToSend);
 
   private:
+    std::optional<std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>>
+        requestAddRetry(std::shared_ptr<IpmbRequest> request, 
+                        boost::asio::yield_context& yield,
+                        std::vector<uint8_t>& buffer);
+
+    void processValidI2cEvent(IPMB_HEADER* ipmbFrame, ssize_t r);
+
     boost::asio::posix::stream_descriptor i2cSlaveDescriptor;
 
     int ipmbi2cSlaveFd;
