@@ -15,13 +15,17 @@
 
 #include "ipmbdefines.hpp"
 
+#include <sys/types.h>
+
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/container/flat_set.hpp>
 #include <sdbusplus/asio/object_server.hpp>
 #include <sdbusplus/message.hpp>
 
+#include <cstdint>
 #include <optional>
+#include <span>
 #include <vector>
 
 extern "C"
@@ -134,9 +138,9 @@ constexpr uint8_t ipmbLunFromSeqLunGet(uint8_t seqNumLun)
 /**
  * @brief Ipmb checkers
  */
-constexpr bool ipmbIsResponse(IPMB_HEADER* ipmbHeader)
+constexpr bool ipmbIsResponse(IPMB_HEADER& ipmbHeader)
 {
-    return ipmbNetFnGet(ipmbHeader->Header.Resp.rqNetFnLUN) &
+    return ipmbNetFnGet(ipmbHeader.Header.Resp.rqNetFnLUN) &
            ipmbNetFnResponseMask;
 }
 
@@ -180,7 +184,7 @@ struct IpmbResponse
                  uint8_t seq, uint8_t rsLun, uint8_t cmd,
                  uint8_t completionCode, const std::vector<uint8_t>& inputData);
 
-    void i2cToIpmbConstruct(IPMB_HEADER* ipmbBuffer, size_t bufferLength);
+    void i2cToIpmbConstruct(IPMB_HEADER& ipmbBuffer, size_t bufferLength);
 
     std::shared_ptr<std::vector<uint8_t>> ipmbToi2cConstruct();
 };
@@ -220,7 +224,7 @@ struct IpmbRequest
     std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>
         returnStatusResponse(int status);
 
-    void i2cToIpmbConstruct(IPMB_HEADER* ipmbBuffer, size_t bufferLength);
+    void i2cToIpmbConstruct(IPMB_HEADER& ipmbBuffer, size_t bufferLength);
 
     int ipmbToi2cConstruct(std::vector<uint8_t>& buffer);
 };
@@ -255,6 +259,9 @@ constexpr uint8_t ipmbReqNetFnFromRespNetFn(uint8_t reqNetFn)
 {
     return reqNetFn & ~ipmbNetFnResponseMask;
 }
+
+using IpmiDbusRspType =
+    std::tuple<uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>;
 
 /**
  * @brief IpmbChannel class declaration
@@ -299,6 +306,19 @@ class IpmbChannel
                    std::shared_ptr<IpmbRequest> requestToSend);
 
   private:
+    std::optional<std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t,
+                             std::vector<uint8_t>>>
+        requestAddRetry(IpmbRequest& request, boost::asio::yield_context& yield,
+                        std::span<uint8_t> buffer);
+
+    void processValidI2cEvent(IPMB_HEADER& ipmbFrame, ssize_t r);
+    void processValidI2cEventCallback(uint8_t address, uint8_t rqLun,
+                                      uint8_t seq,
+                                      const boost::system::error_code& ec,
+                                      const IpmiDbusRspType& response);
+
+    bool applyCommandFilter(IPMB_HEADER& ipmbFrame);
+
     boost::asio::posix::stream_descriptor i2cSlaveDescriptor;
 
     int ipmbi2cSlaveFd;
