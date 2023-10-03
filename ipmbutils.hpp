@@ -16,9 +16,14 @@
 #ifndef IPMBUTILS_HPP
 #define IPMBUTILS_HPP
 
+#include "ipmbdefines.hpp"
+
+#include <inttypes.h>
+
 /**
  * @brief function performing IPMB header and data checksum validation
  */
+
 bool isFrameValid(IPMB_HEADER* frame, uint8_t length);
 
 /**
