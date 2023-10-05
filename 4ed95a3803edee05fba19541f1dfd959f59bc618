@@ -1,0 +1,205 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "54c6a437_885400ff",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2023-10-05T17:13:22Z",
+      "side": 1,
+      "message": "Why are we:\n\nA. using NOLINTBEGIN instead of NOLINT?  Are the begin/end calls actually required in all cases?  that kind of makes a mess of things.\nB. This function doesn\u0027t look long, and looks like it\u0027s just a constructor.  Why are we avoiding refactoring it here?  What would the refactor look like in this case?\n\nThis somewhat points to a worrying case where the # of function params might not need to be hard-enforced.  cppcoreguidelines says to be suspicious of \u003e7, not that they\u0027re outright hard banned.",
+      "range": {
+        "startLine": 60,
+        "startChar": 0,
+        "endLine": 76,
+        "endChar": 39
+      },
+      "revId": "4ed95a3803edee05fba19541f1dfd959f59bc618",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6eefe0bc_db5455ec",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 420,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2023-10-05T17:13:22Z",
+      "side": 1,
+      "message": "Pass as a reference not a pointer?",
+      "range": {
+        "startLine": 420,
+        "startChar": 37,
+        "endLine": 420,
+        "endChar": 49
+      },
+      "revId": "4ed95a3803edee05fba19541f1dfd959f59bc618",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5bd4c71d_39df3fef",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 449,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2023-10-05T17:13:22Z",
+      "side": 1,
+      "message": "same here.",
+      "range": {
+        "startLine": 449,
+        "startChar": 39,
+        "endLine": 449,
+        "endChar": 51
+      },
+      "revId": "4ed95a3803edee05fba19541f1dfd959f59bc618",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f1b8b0e6_4ea69704",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 477,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2023-10-05T17:13:22Z",
+      "side": 1,
+      "message": "This comment looks like it\u0027s now in the wrong place?",
+      "range": {
+        "startLine": 475,
+        "startChar": 0,
+        "endLine": 477,
+        "endChar": 22
+      },
+      "revId": "4ed95a3803edee05fba19541f1dfd959f59bc618",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3edbbae2_b6f0418b",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 751,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2023-10-05T17:13:22Z",
+      "side": 1,
+      "message": "No need to pass as a shared_ptr if this function isn\u0027t taking ownership.  Generally this would be passed by IpmbRequest\u0026",
+      "range": {
+        "startLine": 751,
+        "startChar": 33,
+        "endLine": 751,
+        "endChar": 61
+      },
+      "revId": "4ed95a3803edee05fba19541f1dfd959f59bc618",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0f096da0_4450499f",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 753,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2023-10-05T17:13:22Z",
+      "side": 1,
+      "message": "Should be const (or now that we have c++20 use std::span).",
+      "range": {
+        "startLine": 753,
+        "startChar": 33,
+        "endLine": 753,
+        "endChar": 54
+      },
+      "revId": "4ed95a3803edee05fba19541f1dfd959f59bc618",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cb2bc89c_d4297793",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 765,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2023-10-05T17:13:22Z",
+      "side": 1,
+      "message": "This looks like a bug.  it returns instead of retrying.  The old code called continue here.  Now it looks like the i2c retry loop on line 758 doesn\u0027t do anything.\n\nHow do we ensure that the new refactored logic is the same as the old?",
+      "range": {
+        "startLine": 765,
+        "startChar": 0,
+        "endLine": 765,
+        "endChar": 41
+      },
+      "revId": "4ed95a3803edee05fba19541f1dfd959f59bc618",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "dd9319f4_98dc4f77",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 800,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2023-10-05T17:13:22Z",
+      "side": 1,
+      "message": "In the way the code works now, isn\u0027t this going to retry?  In the old code, this fallthrough wouldn\u0027t cause a retry ( I think?)",
+      "range": {
+        "startLine": 800,
+        "startChar": 4,
+        "endLine": 800,
+        "endChar": 24
+      },
+      "revId": "4ed95a3803edee05fba19541f1dfd959f59bc618",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9fae83d5_d4af2657",
+        "filename": "ipmbutils.hpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2023-10-05T17:13:22Z",
+      "side": 1,
+      "message": "cstdint?",
+      "revId": "4ed95a3803edee05fba19541f1dfd959f59bc618",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
