@@ -24,6 +24,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "5e17edfc_975861b7",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 1001712
+      },
+      "writtenOn": "2023-10-06T09:13:19Z",
+      "side": 1,
+      "message": "(A)\nhttps://clang.llvm.org/extra/clang-tidy/\nThey say that NOLINT works for the same line,\nand NOLINTNEXTLINE works for the next line.\nDue to the .clang-format and wrapping, this would not work for openbmc repos?\n\n(B)\nI would be happy if the number of parameters stays a warning.\nFeel like the main issue is nesting and length of the function.\nThis constructor does not look like something to be worried about.",
+      "parentUuid": "54c6a437_885400ff",
+      "range": {
+        "startLine": 60,
+        "startChar": 0,
+        "endLine": 76,
+        "endChar": 39
+      },
+      "revId": "4ed95a3803edee05fba19541f1dfd959f59bc618",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "6eefe0bc_db5455ec",
@@ -37,6 +61,30 @@
       "writtenOn": "2023-10-05T17:13:22Z",
       "side": 1,
       "message": "Pass as a reference not a pointer?",
+      "range": {
+        "startLine": 420,
+        "startChar": 37,
+        "endLine": 420,
+        "endChar": 49
+      },
+      "revId": "4ed95a3803edee05fba19541f1dfd959f59bc618",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "68b19f1a_f490e23e",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 420,
+      "author": {
+        "id": 1001712
+      },
+      "writtenOn": "2023-10-06T09:13:19Z",
+      "side": 1,
+      "message": "changed it, but that\u0027s not the point of this refactoring.",
+      "parentUuid": "6eefe0bc_db5455ec",
       "range": {
         "startLine": 420,
         "startChar": 37,
@@ -70,6 +118,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "fd111f7e_b896e644",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 449,
+      "author": {
+        "id": 1001712
+      },
+      "writtenOn": "2023-10-06T09:13:19Z",
+      "side": 1,
+      "message": "changed it, but that\u0027s not the point of this refactoring.",
+      "parentUuid": "5bd4c71d_39df3fef",
+      "range": {
+        "startLine": 449,
+        "startChar": 39,
+        "endLine": 449,
+        "endChar": 51
+      },
+      "revId": "4ed95a3803edee05fba19541f1dfd959f59bc618",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "f1b8b0e6_4ea69704",
@@ -83,6 +155,30 @@
       "writtenOn": "2023-10-05T17:13:22Z",
       "side": 1,
       "message": "This comment looks like it\u0027s now in the wrong place?",
+      "range": {
+        "startLine": 475,
+        "startChar": 0,
+        "endLine": 477,
+        "endChar": 22
+      },
+      "revId": "4ed95a3803edee05fba19541f1dfd959f59bc618",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ae288c41_fbf68226",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 477,
+      "author": {
+        "id": 1001712
+      },
+      "writtenOn": "2023-10-06T09:13:19Z",
+      "side": 1,
+      "message": "moved the comment into the \u0027applyCommandFilter\u0027 function",
+      "parentUuid": "f1b8b0e6_4ea69704",
       "range": {
         "startLine": 475,
         "startChar": 0,
@@ -116,6 +212,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "3831a5da_0ecd3419",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 751,
+      "author": {
+        "id": 1001712
+      },
+      "writtenOn": "2023-10-06T09:13:19Z",
+      "side": 1,
+      "message": "done.",
+      "parentUuid": "3edbbae2_b6f0418b",
+      "range": {
+        "startLine": 751,
+        "startChar": 33,
+        "endLine": 751,
+        "endChar": 61
+      },
+      "revId": "4ed95a3803edee05fba19541f1dfd959f59bc618",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "0f096da0_4450499f",
@@ -129,6 +249,30 @@
       "writtenOn": "2023-10-05T17:13:22Z",
       "side": 1,
       "message": "Should be const (or now that we have c++20 use std::span).",
+      "range": {
+        "startLine": 753,
+        "startChar": 33,
+        "endLine": 753,
+        "endChar": 54
+      },
+      "revId": "4ed95a3803edee05fba19541f1dfd959f59bc618",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "de582beb_ba87360d",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 753,
+      "author": {
+        "id": 1001712
+      },
+      "writtenOn": "2023-10-06T09:13:19Z",
+      "side": 1,
+      "message": "using a span now.",
+      "parentUuid": "0f096da0_4450499f",
       "range": {
         "startLine": 753,
         "startChar": 33,
@@ -162,6 +306,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "e5777b60_1ae9cbf1",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 765,
+      "author": {
+        "id": 1001712
+      },
+      "writtenOn": "2023-10-06T09:13:19Z",
+      "side": 1,
+      "message": "That\u0027s the thing.\nWithout tests, the bigger the function gets, the harder it is to be sure that a refactoring or any change for that matter preserves the existing working behavior.\n\nThat\u0027s like the entire point of readability-function-size.\n\nAs mentioned, in the \"Tested\" section this change is not tested and the refactoring is meant to serve as an example of how code could be improved. I do not recommend to merge it.",
+      "parentUuid": "cb2bc89c_d4297793",
+      "range": {
+        "startLine": 765,
+        "startChar": 0,
+        "endLine": 765,
+        "endChar": 41
+      },
+      "revId": "4ed95a3803edee05fba19541f1dfd959f59bc618",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "dd9319f4_98dc4f77",
@@ -185,6 +353,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "3075fd5c_4a9b915e",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 800,
+      "author": {
+        "id": 1001712
+      },
+      "writtenOn": "2023-10-06T09:13:19Z",
+      "side": 1,
+      "message": "i believe the old code has 2 retry loops.\nOne outer one for the ipmb retries and the inner one for the i2c retries.\n\nThe old code should also go around the outer loop again if it gets all the way to the end of it.\n\nThe \u0027requestAddRetry\u0027 function should replace the inner loop.",
+      "parentUuid": "dd9319f4_98dc4f77",
+      "range": {
+        "startLine": 800,
+        "startChar": 4,
+        "endLine": 800,
+        "endChar": 24
+      },
+      "revId": "4ed95a3803edee05fba19541f1dfd959f59bc618",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "9fae83d5_d4af2657",
@@ -198,6 +390,24 @@
       "writtenOn": "2023-10-05T17:13:22Z",
       "side": 1,
       "message": "cstdint?",
+      "revId": "4ed95a3803edee05fba19541f1dfd959f59bc618",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8af9a9b5_867eae41",
+        "filename": "ipmbutils.hpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1001712
+      },
+      "writtenOn": "2023-10-06T09:13:19Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9fae83d5_d4af2657",
       "revId": "4ed95a3803edee05fba19541f1dfd959f59bc618",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
