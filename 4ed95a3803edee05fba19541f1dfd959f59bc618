@@ -50,6 +50,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "f6e67634_5e476c79",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2023-10-06T15:07:43Z",
+      "side": 1,
+      "message": "\u003e (A)\n\u003e https://clang.llvm.org/extra/clang-tidy/\n\u003e They say that NOLINT works for the same line,\n\u003e and NOLINTNEXTLINE works for the next line.\n\u003e Due to the .clang-format and wrapping, this would not work for openbmc repos?\n\nYou marked this as a question, but sounds like a statement.  You don\u0027t think it would work?\n\n\u003e \n\u003e (B)\n\u003e I would be happy if the number of parameters stays a warning.\n\nSeems fine, but I\u0027m not sure how to set that up in clang-tidy.\n\n\u003e Feel like the main issue is nesting and length of the function.\n\u003e This constructor does not look like something to be worried about.",
+      "parentUuid": "5e17edfc_975861b7",
+      "range": {
+        "startLine": 60,
+        "startChar": 0,
+        "endLine": 76,
+        "endChar": 39
+      },
+      "revId": "4ed95a3803edee05fba19541f1dfd959f59bc618",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "6eefe0bc_db5455ec",
         "filename": "ipmbbridged.cpp",
         "patchSetId": 4
@@ -85,6 +109,30 @@
       "side": 1,
       "message": "changed it, but that\u0027s not the point of this refactoring.",
       "parentUuid": "6eefe0bc_db5455ec",
+      "range": {
+        "startLine": 420,
+        "startChar": 37,
+        "endLine": 420,
+        "endChar": 49
+      },
+      "revId": "4ed95a3803edee05fba19541f1dfd959f59bc618",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e7101b64_adae2e8c",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 420,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2023-10-06T15:07:43Z",
+      "side": 1,
+      "message": "Agreed, but it was code you changed.",
+      "parentUuid": "68b19f1a_f490e23e",
       "range": {
         "startLine": 420,
         "startChar": 37,
@@ -320,6 +368,30 @@
       "side": 1,
       "message": "That\u0027s the thing.\nWithout tests, the bigger the function gets, the harder it is to be sure that a refactoring or any change for that matter preserves the existing working behavior.\n\nThat\u0027s like the entire point of readability-function-size.\n\nAs mentioned, in the \"Tested\" section this change is not tested and the refactoring is meant to serve as an example of how code could be improved. I do not recommend to merge it.",
       "parentUuid": "cb2bc89c_d4297793",
+      "range": {
+        "startLine": 765,
+        "startChar": 0,
+        "endLine": 765,
+        "endChar": 41
+      },
+      "revId": "4ed95a3803edee05fba19541f1dfd959f59bc618",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c86a961f_09044b26",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 765,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2023-10-06T15:07:43Z",
+      "side": 1,
+      "message": "\u003e That\u0027s the thing.\n\u003e Without tests, the bigger the function gets, the harder it is to be sure that a refactoring or any change for that matter preserves the existing working behavior.\n\u003e \n\u003e That\u0027s like the entire point of readability-function-size.\n\nAgreed, but if the goal is to reduce bugs, and refactoring causes bugs, doesn\u0027t that defeat the purpose?  Maybe I misunderstood the goal?\n\nUnless the goal is to cleanroom rewrite all of OpenBMC under these new rules, and completely retest, I\u0027m not sure how it does anyone any good to break code.\n\n\u003e \n\u003e As mentioned, in the \"Tested\" section this change is not tested and the refactoring is meant to serve as an example of how code could be improved. I do not recommend to merge it.\n\nPlease document this in your clang-tidy plan, that you don\u0027t recommend merging the changes that tidy recommends.  This is a surprise to me.",
+      "parentUuid": "e5777b60_1ae9cbf1",
       "range": {
         "startLine": 765,
         "startChar": 0,
