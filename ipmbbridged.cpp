@@ -503,7 +503,7 @@ void IpmbChannel::processI2cEvent()
             }
 
             ipmbSendI2cFrame(buffer);
-            },
+        },
             "xyz.openbmc_project.Ipmi.Host", "/xyz/openbmc_project/Ipmi",
             "xyz.openbmc_project.Ipmi.Server", "execute",
             ipmbMessageReceived.netFn, ipmbMessageReceived.rsLun,
@@ -522,7 +522,7 @@ end:
         }
 
         processI2cEvent();
-        });
+    });
 }
 
 IpmbChannel::IpmbChannel(boost::asio::io_context& io,
@@ -594,7 +594,7 @@ int IpmbChannel::ipmbChannelInit(const char* ipmbI2cSlave)
         }
 
         processI2cEvent();
-        });
+    });
 
     return 0;
 }
@@ -670,7 +670,7 @@ int IpmbChannel::ipmbChannelUpdateSlaveAddress(const uint8_t newBmcSlaveAddr)
         }
 
         processI2cEvent();
-        });
+    });
 
     ipmbBmcSlaveAddress = newBmcSlaveAddr;
 
