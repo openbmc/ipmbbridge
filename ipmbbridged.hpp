@@ -262,16 +262,16 @@ constexpr uint8_t ipmbReqNetFnFromRespNetFn(uint8_t reqNetFn)
 class IpmbChannel
 {
   public:
-    IpmbChannel(boost::asio::io_context& io, uint8_t ipmbBmcSlaveAddress,
-                uint8_t ipmbRqSlaveAddress, uint8_t channelIdx,
+    IpmbChannel(boost::asio::io_context& io, uint8_t ipmbBmcTargetAddress,
+                uint8_t ipmbRqTargetAddress, uint8_t channelIdx,
                 std::shared_ptr<IpmbCommandFilter> commandFilter);
 
     IpmbChannel(const IpmbChannel&) = delete;
     IpmbChannel& operator=(const IpmbChannel&) = delete;
 
-    int ipmbChannelInit(const char* ipmbI2cSlave);
+    int ipmbChannelInit(const char* ipmbI2cTarget);
 
-    int ipmbChannelUpdateSlaveAddress(const uint8_t newBmcSlaveAddr);
+    int ipmbChannelUpdateTargetAddress(const uint8_t newBmcTargetAddr);
 
     bool seqNumGet(uint8_t& seq);
 
@@ -283,9 +283,9 @@ class IpmbChannel
 
     uint8_t getChannelIdx();
 
-    uint8_t getBmcSlaveAddress();
+    uint8_t getBmcTargetAddress();
 
-    uint8_t getRqSlaveAddress();
+    uint8_t getRqTargetAddress();
 
     void addFilter(const uint8_t respNetFn, const uint8_t cmd);
 
@@ -299,12 +299,12 @@ class IpmbChannel
                    std::shared_ptr<IpmbRequest> requestToSend);
 
   private:
-    boost::asio::posix::stream_descriptor i2cSlaveDescriptor;
+    boost::asio::posix::stream_descriptor i2cTargetDescriptor;
 
-    int ipmbi2cSlaveFd;
+    int ipmbi2cTargetFd;
 
-    uint8_t ipmbBmcSlaveAddress;
-    uint8_t ipmbRqSlaveAddress;
+    uint8_t ipmbBmcTargetAddress;
+    uint8_t ipmbRqTargetAddress;
     uint8_t ipmbBusId;
     uint8_t channelIdx;
 

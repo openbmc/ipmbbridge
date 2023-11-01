@@ -37,7 +37,7 @@ typedef struct _IPMB_HEADER
             uint8_t checksum1;  /// @brief checksum computed on first two bytes
                                 /// of IPMB_HEADER
             /** @brief IPMB Header */
-            uint8_t rqSA;     /// @brief requester's slave address, LS bit=0
+            uint8_t rqSA;     /// @brief requester's target address, LS bit=0
             uint8_t rqSeqLUN; /// @brief requester's sequence number and logical
                               /// unit number
             uint8_t cmd; /// @brief command required by the network identify the
@@ -53,7 +53,7 @@ typedef struct _IPMB_HEADER
             uint8_t checksum1;  /// @brief checksum computed on first two bytes
                                 /// of IPMB_HEADER
             /** @brief IPMB Header */
-            uint8_t rsSA;     /// @brief responder's slave address, LS bit=0
+            uint8_t rsSA;     /// @brief responder's target address, LS bit=0
             uint8_t rsSeqLUN; /// @brief responder's sequence number and logical
                               /// unit number
             uint8_t cmd; /// @brief command required by the network identify the
