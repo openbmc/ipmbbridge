@@ -266,7 +266,7 @@ void IpmbChannel::ipmbSendI2cFrame(std::shared_ptr<std::vector<uint8_t>> buffer,
     uint8_t targetAddr = ipmbIsResponse(&(ipmbPkt->hdr))
                              ? ipmbPkt->hdr.Header.Resp.address
                              : ipmbPkt->hdr.Header.Req.address;
-    boost::asio::async_write(i2cSlaveDescriptor, boost::asio::buffer(*buffer),
+    boost::asio::async_write(i2cTargetDescriptor, boost::asio::buffer(*buffer),
                              [this, buffer, retriesAttempted,
                               targetAddr](const boost::system::error_code& ec,
                                           size_t /* bytesSent */) {
@@ -353,8 +353,8 @@ void IpmbChannel::processI2cEvent()
     IPMB_PKT* ipmbPkt = reinterpret_cast<IPMB_PKT*>(buffer.data());
     IPMB_HEADER* ipmbFrame = &(ipmbPkt->hdr);
 
-    lseek(ipmbi2cSlaveFd, 0, SEEK_SET);
-    ssize_t r = read(ipmbi2cSlaveFd, buffer.data(), ipmbMaxFrameLength);
+    lseek(ipmbi2cTargetFd, 0, SEEK_SET);
+    ssize_t r = read(ipmbi2cTargetFd, buffer.data(), ipmbMaxFrameLength);
 
     // Handle error cases.
     if (r < 0)
@@ -417,7 +417,7 @@ void IpmbChannel::processI2cEvent()
 
                 // prepare generic response
                 auto ipmbResponse = IpmbResponse(
-                    rqSA, ipmbRespNetFn(netFn), lun, ipmbBmcSlaveAddress, seq,
+                    rqSA, ipmbRespNetFn(netFn), lun, ipmbBmcTargetAddress, seq,
                     ipmbRsLun, cmd, ipmbIpmiInvalidCmd, {});
 
                 auto buffer = ipmbResponse.ipmbToi2cConstruct();
@@ -454,7 +454,7 @@ void IpmbChannel::processI2cEvent()
                 return;
             }
 
-            uint8_t bmcSlaveAddress = getBmcSlaveAddress();
+            uint8_t bmcTargetAddress = getBmcTargetAddress();
 
             if (payload.size() > ipmbMaxDataSize)
             {
@@ -463,8 +463,8 @@ void IpmbChannel::processI2cEvent()
 
                 // prepare generic response
                 auto ipmbResponse = IpmbResponse(
-                    address, netfn, rqLun, bmcSlaveAddress, seq, ipmbRsLun, cmd,
-                    ipmbIpmiCmdRespNotProvided, {});
+                    address, netfn, rqLun, bmcTargetAddress, seq, ipmbRsLun,
+                    cmd, ipmbIpmiCmdRespNotProvided, {});
 
                 auto buffer = ipmbResponse.ipmbToi2cConstruct();
                 if (buffer)
@@ -491,8 +491,8 @@ void IpmbChannel::processI2cEvent()
 
             // payload is empty after constructor invocation
             auto ipmbResponse = IpmbResponse(address, netfn, rqLun,
-                                             bmcSlaveAddress, seq, lun, cmd, cc,
-                                             payload);
+                                             bmcTargetAddress, seq, lun, cmd,
+                                             cc, payload);
 
             auto buffer = ipmbResponse.ipmbToi2cConstruct();
             if (!buffer)
@@ -511,7 +511,7 @@ void IpmbChannel::processI2cEvent()
     }
 
 end:
-    i2cSlaveDescriptor.async_wait(
+    i2cTargetDescriptor.async_wait(
         boost::asio::posix::descriptor_base::wait_read,
         [this](const boost::system::error_code& ec) {
         if (ec)
@@ -526,21 +526,21 @@ end:
 }
 
 IpmbChannel::IpmbChannel(boost::asio::io_context& io,
-                         uint8_t ipmbBmcSlaveAddress,
-                         uint8_t ipmbRqSlaveAddress, uint8_t channelIdx,
+                         uint8_t ipmbBmcTargetAddress,
+                         uint8_t ipmbRqTargetAddress, uint8_t channelIdx,
                          std::shared_ptr<IpmbCommandFilter> commandFilter) :
-    i2cSlaveDescriptor(io),
-    ipmbBmcSlaveAddress(ipmbBmcSlaveAddress),
-    ipmbRqSlaveAddress(ipmbRqSlaveAddress), channelIdx(channelIdx),
+    i2cTargetDescriptor(io),
+    ipmbBmcTargetAddress(ipmbBmcTargetAddress),
+    ipmbRqTargetAddress(ipmbRqTargetAddress), channelIdx(channelIdx),
     commandFilter(commandFilter)
 {}
 
-int IpmbChannel::ipmbChannelInit(const char* ipmbI2cSlave)
+int IpmbChannel::ipmbChannelInit(const char* ipmbI2cTarget)
 {
-    // extract bus id from slave path and save
-    std::string ipmbI2cSlaveStr(ipmbI2cSlave);
-    auto findHyphen = ipmbI2cSlaveStr.find("-");
-    std::string busStr = ipmbI2cSlaveStr.substr(findHyphen + 1);
+    // extract bus id from target path and save
+    std::string ipmbI2cTargetStr(ipmbI2cTarget);
+    auto findHyphen = ipmbI2cTargetStr.find("-");
+    std::string busStr = ipmbI2cTargetStr.substr(findHyphen + 1);
     try
     {
         ipmbBusId = std::stoi(busStr);
@@ -548,13 +548,13 @@ int IpmbChannel::ipmbChannelInit(const char* ipmbI2cSlave)
     catch (const std::invalid_argument&)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
-            "ipmbChannelInit: invalid bus id in slave-path config");
+            "ipmbChannelInit: invalid bus id in target-path config");
         return -1;
     }
 
-    // Check if sysfs has device. If not, enable I2C slave driver by command
+    // Check if sysfs has device. If not, enable I2C target driver by command
     // echo "ipmb-dev 0x1010" > /sys/bus/i2c/devices/i2c-0/new_device
-    bool hasSysfs = std::filesystem::exists(ipmbI2cSlave);
+    bool hasSysfs = std::filesystem::exists(ipmbI2cTarget);
     if (!hasSysfs)
     {
         std::string deviceFileName = "/sys/bus/i2c/devices/i2c-" + busStr +
@@ -572,18 +572,18 @@ int IpmbChannel::ipmbChannelInit(const char* ipmbI2cSlave)
         deviceFile.close();
     }
 
-    // open fd to i2c slave device for read write
-    ipmbi2cSlaveFd = open(ipmbI2cSlave, O_RDWR | O_NONBLOCK | O_CLOEXEC);
-    if (ipmbi2cSlaveFd < 0)
+    // open fd to i2c target device for read write
+    ipmbi2cTargetFd = open(ipmbI2cTarget, O_RDWR | O_NONBLOCK | O_CLOEXEC);
+    if (ipmbi2cTargetFd < 0)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
-            "ipmbChannelInit: error opening ipmbI2cSlave");
+            "ipmbChannelInit: error opening ipmbI2cTarget");
         return -1;
     }
 
-    i2cSlaveDescriptor.assign(ipmbi2cSlaveFd);
+    i2cTargetDescriptor.assign(ipmbi2cTargetFd);
 
-    i2cSlaveDescriptor.async_wait(
+    i2cTargetDescriptor.async_wait(
         boost::asio::posix::descriptor_base::wait_read,
         [this](const boost::system::error_code& ec) {
         if (ec)
@@ -599,16 +599,16 @@ int IpmbChannel::ipmbChannelInit(const char* ipmbI2cSlave)
     return 0;
 }
 
-int IpmbChannel::ipmbChannelUpdateSlaveAddress(const uint8_t newBmcSlaveAddr)
+int IpmbChannel::ipmbChannelUpdateTargetAddress(const uint8_t newBmcTargetAddr)
 {
-    if (ipmbi2cSlaveFd > 0)
+    if (ipmbi2cTargetFd > 0)
     {
-        i2cSlaveDescriptor.close();
-        close(ipmbi2cSlaveFd);
-        ipmbi2cSlaveFd = 0;
+        i2cTargetDescriptor.close();
+        close(ipmbi2cTargetFd);
+        ipmbi2cTargetFd = 0;
     }
 
-    // disable old I2C slave driver by command:
+    // disable old I2C target driver by command:
     //     echo "0x1010" > /sys/bus/i2c/devices/i2c-0/delete_device
     std::string deviceFileName;
     std::string para;
@@ -620,19 +620,19 @@ int IpmbChannel::ipmbChannelUpdateSlaveAddress(const uint8_t newBmcSlaveAddr)
     if (!deviceFile.good())
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
-            "ipmbChannelUpdateSlaveAddress: error opening deviceFile to delete "
+            "ipmbChannelUpdateTargetAddress: error opening deviceFile to delete "
             "sysfs");
         return -1;
     }
     deviceFile << para;
     deviceFile.close();
 
-    // enable new I2C slave driver by command:
+    // enable new I2C target driver by command:
     //      echo "ipmb-dev 0x1012" > /sys/bus/i2c/devices/i2c-0/new_device
     deviceFileName = "/sys/bus/i2c/devices/i2c-" + std::to_string(ipmbBusId) +
                      "/new_device";
     std::ostringstream hex;
-    uint16_t addr = 0x1000 + (newBmcSlaveAddr >> 1);
+    uint16_t addr = 0x1000 + (newBmcTargetAddr >> 1);
     hex << std::hex << static_cast<uint16_t>(addr);
     const std::string& addressHexStr = hex.str();
     para = "ipmb-dev 0x" + addressHexStr;
@@ -640,26 +640,26 @@ int IpmbChannel::ipmbChannelUpdateSlaveAddress(const uint8_t newBmcSlaveAddr)
     if (!deviceFile.good())
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
-            "ipmbChannelUpdateSlaveAddress: error opening deviceFile to create "
+            "ipmbChannelUpdateTargetAddress: error opening deviceFile to create "
             "sysfs");
         return -1;
     }
     deviceFile << para;
     deviceFile.close();
 
-    // open fd to i2c slave device
-    std::string ipmbI2cSlaveStr = "/dev/ipmb-" + std::to_string(ipmbBusId);
-    ipmbi2cSlaveFd = open(ipmbI2cSlaveStr.c_str(), O_RDWR | O_NONBLOCK);
-    if (ipmbi2cSlaveFd < 0)
+    // open fd to i2c target device
+    std::string ipmbI2cTargetStr = "/dev/ipmb-" + std::to_string(ipmbBusId);
+    ipmbi2cTargetFd = open(ipmbI2cTargetStr.c_str(), O_RDWR | O_NONBLOCK);
+    if (ipmbi2cTargetFd < 0)
     {
         phosphor::logging::log<phosphor::logging::level::ERR>(
-            "ipmbChannelInit: error opening ipmbI2cSlave");
+            "ipmbChannelInit: error opening ipmbI2cTarget");
         return -1;
     }
 
-    // start to receive i2c data as slave
-    i2cSlaveDescriptor.assign(ipmbi2cSlaveFd);
-    i2cSlaveDescriptor.async_wait(
+    // start to receive i2c data as target
+    i2cTargetDescriptor.assign(ipmbi2cTargetFd);
+    i2cTargetDescriptor.async_wait(
         boost::asio::posix::descriptor_base::wait_read,
         [this](const boost::system::error_code& ec) {
         if (ec)
@@ -672,7 +672,7 @@ int IpmbChannel::ipmbChannelUpdateSlaveAddress(const uint8_t newBmcSlaveAddr)
         processI2cEvent();
     });
 
-    ipmbBmcSlaveAddress = newBmcSlaveAddr;
+    ipmbBmcTargetAddress = newBmcTargetAddr;
 
     return 0;
 }
@@ -682,14 +682,14 @@ uint8_t IpmbChannel::getBusId()
     return ipmbBusId;
 }
 
-uint8_t IpmbChannel::getBmcSlaveAddress()
+uint8_t IpmbChannel::getBmcTargetAddress()
 {
-    return ipmbBmcSlaveAddress;
+    return ipmbBmcTargetAddress;
 }
 
-uint8_t IpmbChannel::getRqSlaveAddress()
+uint8_t IpmbChannel::getRqTargetAddress()
 {
-    return ipmbRqSlaveAddress;
+    return ipmbRqTargetAddress;
 }
 
 uint8_t IpmbChannel::getDevIndex()
@@ -734,7 +734,7 @@ std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>
 
         for (; i2cRetryCnt < ipmbI2cNumberOfRetries; i2cRetryCnt++)
         {
-            boost::asio::async_write(i2cSlaveDescriptor,
+            boost::asio::async_write(i2cTargetDescriptor,
                                      boost::asio::buffer(buffer), yield[ec]);
 
             if (ec)
@@ -814,7 +814,7 @@ static int initializeChannels()
         for (const auto& channelConfig : data["channels"])
         {
             const std::string& typeConfig = channelConfig["type"];
-            const std::string& slavePath = channelConfig["slave-path"];
+            const std::string& targetPath = channelConfig["slave-path"];
             uint8_t bmcAddr = channelConfig["bmc-addr"];
             uint8_t reqAddr = channelConfig["remote-addr"];
 
@@ -828,7 +828,7 @@ static int initializeChannels()
             auto channel = ipmbChannels.emplace(
                 ipmbChannels.end(), io, bmcAddr, reqAddr,
                 ((devIndex << 2) | static_cast<uint8_t>(type)), commandFilter);
-            if (channel->ipmbChannelInit(slavePath.c_str()) < 0)
+            if (channel->ipmbChannelInit(targetPath.c_str()) < 0)
             {
                 phosphor::logging::log<phosphor::logging::level::ERR>(
                     "initializeChannels: channel initialization failed");
@@ -873,12 +873,12 @@ auto ipmbHandleRequest = [](boost::asio::yield_context yield,
         return returnStatus(ipmbResponseStatus::busy);
     }
 
-    uint8_t bmcSlaveAddress = channel->getBmcSlaveAddress();
-    uint8_t rqSlaveAddress = channel->getRqSlaveAddress();
+    uint8_t bmcTargetAddress = channel->getBmcTargetAddress();
+    uint8_t rqTargetAddress = channel->getRqTargetAddress();
 
     // construct the request to add it to outstanding request list
     std::shared_ptr<IpmbRequest> request = std::make_shared<IpmbRequest>(
-        rqSlaveAddress, netfn, ipmbRsLun, bmcSlaveAddress, seqNum, lun, cmd,
+        rqTargetAddress, netfn, ipmbRsLun, bmcTargetAddress, seqNum, lun, cmd,
         dataReceived);
 
     if (!request->timer)
@@ -891,23 +891,23 @@ auto ipmbHandleRequest = [](boost::asio::yield_context yield,
     return channel->requestAdd(yield, request);
 };
 
-void addUpdateSlaveAddrHandler()
+void addUpdateTargetAddrHandler()
 {
-    // callback to handle dbus signal of updating slave addr
-    std::function<void(sdbusplus::message_t&)> updateSlaveAddrHandler =
+    // callback to handle dbus signal of updating target addr
+    std::function<void(sdbusplus::message_t&)> updateTargetAddrHandler =
         [](sdbusplus::message_t& message) {
-        uint8_t reqChannel, busId, slaveAddr;
+        uint8_t reqChannel, busId, targetAddr;
 
         // valid source of signal, check whether from multi-node manager
         std::string pathName = message.get_path();
         if (pathName != "/xyz/openbmc_project/MultiNode/Status")
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
-                "addUpdateSlaveAddrHandler: invalid obj path");
+                "addUpdateTargetAddrHandler: invalid obj path");
             return;
         }
 
-        message.read(reqChannel, busId, slaveAddr);
+        message.read(reqChannel, busId, targetAddr);
 
         IpmbChannel* channel = getChannel(reqChannel);
 
@@ -915,29 +915,29 @@ void addUpdateSlaveAddrHandler()
             channel->getChannelType() != ipmbChannelType::ipmb)
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
-                "addUpdateSlaveAddrHandler: invalid channel");
+                "addUpdateTargetAddrHandler: invalid channel");
             return;
         }
         if (busId != channel->getBusId())
         {
             phosphor::logging::log<phosphor::logging::level::ERR>(
-                "addUpdateSlaveAddrHandler: invalid busId");
+                "addUpdateTargetAddrHandler: invalid busId");
             return;
         }
-        if (channel->getBmcSlaveAddress() == slaveAddr)
+        if (channel->getBmcTargetAddress() == targetAddr)
         {
             phosphor::logging::log<phosphor::logging::level::INFO>(
-                "addUpdateSlaveAddrHandler: channel bmc slave addr is "
+                "addUpdateTargetAddrHandler: channel bmc target addr is "
                 "unchanged, do nothing");
             return;
         }
 
-        channel->ipmbChannelUpdateSlaveAddress(slaveAddr);
+        channel->ipmbChannelUpdateTargetAddress(targetAddr);
     };
 
     static auto match = std::make_unique<sdbusplus::bus::match_t>(
         static_cast<sdbusplus::bus_t&>(*conn),
-        "type='signal',member='updateBmcSlaveAddr',", updateSlaveAddrHandler);
+        "type='signal',member='updateBmcTargetAddr',", updateTargetAddrHandler);
 }
 
 void addSendBroadcastHandler()
@@ -959,12 +959,12 @@ void addSendBroadcastHandler()
             return;
         }
 
-        uint8_t bmcSlaveAddress = channel->getBmcSlaveAddress();
+        uint8_t bmcTargetAddress = channel->getBmcTargetAddress();
         uint8_t seqNum = 0; // seqNum is not used in broadcast msg
         uint8_t targetAddr = broadcastAddress;
 
         std::shared_ptr<IpmbRequest> request = std::make_shared<IpmbRequest>(
-            targetAddr, netFn, ipmbRsLun, bmcSlaveAddress, seqNum, lun, cmd,
+            targetAddr, netFn, ipmbRsLun, bmcTargetAddress, seqNum, lun, cmd,
             dataReceived);
 
         std::shared_ptr<std::vector<uint8_t>> buffer =
@@ -1005,7 +1005,7 @@ int main()
         return -1;
     }
 
-    addUpdateSlaveAddrHandler();
+    addUpdateTargetAddrHandler();
 
     addSendBroadcastHandler();
 
