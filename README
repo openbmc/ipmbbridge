@@ -58,7 +58,7 @@ Config fields :
 
 type          : This points to the ChannelType. It can be ME or ipmb channel.
 slave-path    : The ipmb device path.
-bmc-addr      : This is BMC slave address to communicate between BMC and device.
-remote-addr   : This is Remote/requestor slave address to communicate between BMC and device.
+bmc-addr      : This is BMC target address to communicate between BMC and device.
+remote-addr   : This is Remote/requestor target address to communicate between BMC and device.
 devIndex      : This devIndex used to identify the particular device/host.
 
