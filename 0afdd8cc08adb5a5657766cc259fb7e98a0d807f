@@ -16,6 +16,24 @@
       "message": "Shouldn\u0027t we just be using the wrapdb one here instead of inventing our own?",
       "revId": "0afdd8cc08adb5a5657766cc259fb7e98a0d807f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "97183bf4_f25da870",
+        "filename": "subprojects/nlohmann_json.wrap",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-07T20:56:29Z",
+      "side": 1,
+      "message": "Why use one that needs manual updates all the time?  This isn\u0027t a repo that people generally want to build outside of openbmc.  HEAD is sufficient for developers to build this outside of OE.",
+      "parentUuid": "769e2c0f_9ccc135e",
+      "revId": "0afdd8cc08adb5a5657766cc259fb7e98a0d807f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
