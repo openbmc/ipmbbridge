@@ -34,6 +34,24 @@
       "parentUuid": "769e2c0f_9ccc135e",
       "revId": "0afdd8cc08adb5a5657766cc259fb7e98a0d807f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b0b00138_691421c5",
+        "filename": "subprojects/nlohmann_json.wrap",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2023-12-07T21:15:42Z",
+      "side": 1,
+      "message": "the same reason we don\u0027t set autorev on yocto recipes.  You get a stable release that can be built at any time and doesn\u0027t break randomly because we pulled in a breaking change from a dependency.\n\nMy opinions here aren\u0027t strong, mostly because nlohmann seems to do a good job keeping old code building on new versions.  There are other dependencies (boost, libgpio) where I think the difference matters.\n\nWith that said, I do think this patch needs to switch to the nlohmann master branch.  The default branch is develop, which I don\u0027t think we want for subproject?  I\u0027m assuming HEAD will just give us the newest on the default branch?  Or is it smart enough to grab master without it being specified?",
+      "parentUuid": "97183bf4_f25da870",
+      "revId": "0afdd8cc08adb5a5657766cc259fb7e98a0d807f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
