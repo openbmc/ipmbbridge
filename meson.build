@@ -23,17 +23,6 @@ add_project_arguments(
   language: 'cpp',
 )
 
-if cpp.has_header('nlohmann/json.hpp')
-    nlohmann_json_dep = declare_dependency()
-else
-    subproject('nlohmann-json')
-    nlohmann_json_dep = declare_dependency(
-        include_directories: include_directories(
-            'subprojects/nlohmann-json/single_include',
-            'subprojects/nlohmann-json/single_include/nlohmann',
-        )
-    )
-endif
 
 boost_dep = dependency(
   'boost',
@@ -41,6 +30,7 @@ boost_dep = dependency(
   include_type: 'system',
 )
 i2c_dep = cpp.find_library('i2c')
+nlohmann_json_dep = dependency('nlohmann_json', include_type: 'system')
 phosphor_logging_dep = dependency('phosphor-logging')
 sdbusplus_dep = dependency('sdbusplus')
 systemd_dep = dependency('systemd')
