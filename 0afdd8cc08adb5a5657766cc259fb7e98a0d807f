@@ -52,6 +52,24 @@
       "parentUuid": "97183bf4_f25da870",
       "revId": "0afdd8cc08adb5a5657766cc259fb7e98a0d807f",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7269d958_5d9d0e95",
+        "filename": "subprojects/nlohmann_json.wrap",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-07T21:33:22Z",
+      "side": 1,
+      "message": "We don\u0027t actually use these for any kind of CI though.  They\u0027re an aid for developers.  By default meson only extracts the package the first time you build and if you don\u0027t know what you\u0027re doing you can end up with a year-old git-commit anyhow (even if the wrap file changes, meson doesn\u0027t re-fetch).  \n\nI don\u0027t think we need to make 30+ commits to update the version for a developer aid.  If we end up where a particular version of nlohmann-json breaks, developers can `git checkout \u003cgood commit\u003e` in their subprojects directory until we sort out what is going on.  \n\nTwo data points based on my ~2 years experience regularly leveraging subproject builds for development:\n    - Many maintainers don\u0027t even use it because I often find problems and have to fix them when making pervasive fixes (that touch their repositories).\n    - I\u0027ve used this exact wrap file (or nearly similar, but HEAD being the important part) for a long while without issue.  Only about 4 repositories in the whole org have been using a pinned wrap file as-is.\n    \n\u003e Or is it smart enough to grab master without it being specified?\n\nIt uses the default branch by default.  I don\u0027t see this as a serious constraint since we\u0027re not using this for CI (as described above).",
+      "parentUuid": "b0b00138_691421c5",
+      "revId": "0afdd8cc08adb5a5657766cc259fb7e98a0d807f",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ]
 }
