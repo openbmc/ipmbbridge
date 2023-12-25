@@ -44,6 +44,8 @@ static std::list<IpmbChannel> ipmbChannels;
 static const std::unordered_map<std::string, ipmbChannelType>
     ipmbChannelTypeMap = {{"me", ipmbChannelType::me},
                           {"ipmb", ipmbChannelType::ipmb}};
+static uint16_t ipmbSendErrCount = 0;
+
 
 /**
  * @brief Ipmb request class methods
@@ -746,12 +748,20 @@ std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>
 
         if (i2cRetryCnt == ipmbI2cNumberOfRetries)
         {
-            std::string msgToLog =
-                "requestAdd: Sent to I2C failed after retries."
-                " busId=" +
-                std::to_string(ipmbBusId) + ", error=" + ec.message();
-            phosphor::logging::log<phosphor::logging::level::INFO>(
-                msgToLog.c_str());
+            if (0 == ipmbSendErrCount)
+            {
+                std::string msgToLog =
+                    "requestAdd: Sent to I2C failed after retries."
+                    " busId=" +
+                    std::to_string(ipmbBusId) + ", error=" + ec.message();
+                phosphor::logging::log<phosphor::logging::level::INFO>(
+                    msgToLog.c_str());
+            }
+            ipmbSendErrCount++;
+        }
+        else
+        {
+            ipmbSendErrCount = 0;
         }
 
         request->timer->expires_after(
