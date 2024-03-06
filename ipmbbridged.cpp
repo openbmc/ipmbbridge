@@ -284,8 +284,27 @@ void IpmbChannel::ipmbSendI2cFrame(std::shared_ptr<std::vector<uint8_t>> buffer,
                         msgToLog.c_str());
                     return;
                 }
-                currentRetryCnt++;
-                ipmbSendI2cFrame(buffer, currentRetryCnt);
+                scheduleFrameResend(buffer, currentRetryCnt);
+            }
+        });
+}
+
+void IpmbChannel::scheduleFrameResend(
+    std::shared_ptr<std::vector<uint8_t>> buffer, size_t retryCount)
+{
+    // SMBus timeout: 30 ms (spec range 25-35 ms)
+    static constexpr size_t resendDelay = 30;
+
+    // Delay increases exponentially with 30 ms multiplied by 2 raised
+    // to the power of retries, e.g.
+    // 1st retry: 30 ms, 2nd: 60 ms, 3rd: 120 ms ...
+    retryTimer.expires_after(
+        std::chrono::milliseconds(resendDelay * (1 << retryCount)));
+    retryTimer.async_wait(
+        [this, buffer, retryCount](const boost::system::error_code& ec) {
+            if (!ec)
+            {
+                ipmbSendI2cFrame(buffer, retryCount + 1);
             }
         });
 }
@@ -527,7 +546,8 @@ IpmbChannel::IpmbChannel(boost::asio::io_context& io,
                          uint8_t ipmbBmcTargetAddress,
                          uint8_t ipmbRqTargetAddress, uint8_t channelIdx,
                          std::shared_ptr<IpmbCommandFilter> commandFilter) :
-    i2cTargetDescriptor(io), ipmbBmcTargetAddress(ipmbBmcTargetAddress),
+    i2cTargetDescriptor(io), retryTimer(io),
+    ipmbBmcTargetAddress(ipmbBmcTargetAddress),
     ipmbRqTargetAddress(ipmbRqTargetAddress), channelIdx(channelIdx),
     commandFilter(commandFilter)
 {}

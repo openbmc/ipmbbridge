@@ -300,6 +300,7 @@ class IpmbChannel
 
   private:
     boost::asio::posix::stream_descriptor i2cTargetDescriptor;
+    boost::asio::steady_timer retryTimer;
 
     int ipmbi2cTargetFd;
 
@@ -322,6 +323,9 @@ class IpmbChannel
     void makeRequestInvalid(IpmbRequest& request);
 
     void makeRequestValid(std::shared_ptr<IpmbRequest> request);
+
+    void scheduleFrameResend(std::shared_ptr<std::vector<uint8_t>> buffer,
+                             size_t retryCount);
 };
 
 /**
