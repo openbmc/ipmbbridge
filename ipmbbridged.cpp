@@ -286,6 +286,10 @@ void IpmbChannel::ipmbSendI2cFrame(std::shared_ptr<std::vector<uint8_t>> buffer,
                     msgToLog.c_str());
                 return;
             }
+#if defined(RETRY_DELAY_MS)
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(RETRY_DELAY_MS));
+#endif
             currentRetryCnt++;
             ipmbSendI2cFrame(buffer, currentRetryCnt);
         }

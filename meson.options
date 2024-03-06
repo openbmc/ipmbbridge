@@ -1,0 +1,5 @@
+option(
+    'retry-delay-ms', type: 'integer',
+    value: 0,
+    description: 'Time between retries on IPMB.',
+)

@@ -23,6 +23,11 @@ add_project_arguments(
   language: 'cpp',
 )
 
+retry_delay_ms = get_option('retry-delay-ms')
+if retry_delay_ms > 0
+  add_project_arguments('-DRETRY_DELAY_MS=@0@'.format(retry_delay_ms), language: 'cpp')
+endif
+
 
 boost_dep = dependency(
   'boost',
