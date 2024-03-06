@@ -23,6 +23,12 @@ add_project_arguments(
   language: 'cpp',
 )
 
+add_project_arguments('-DNUM_OF_RETRIES=@0@'.format(
+  get_option('num-of-retries')), language : 'cpp')
+
+add_project_arguments('-DENABLE_RETRY_DELAY=@0@'.format(
+  get_option('retry-delay').enabled()), language : 'cpp')
+
 
 boost_dep = dependency(
   'boost',

@@ -45,6 +45,8 @@ static const std::unordered_map<std::string, ipmbChannelType>
     ipmbChannelTypeMap = {{"me", ipmbChannelType::me},
                           {"ipmb", ipmbChannelType::ipmb}};
 
+static const bool retry_delay_enabled = ENABLE_RETRY_DELAY;
+
 /**
  * @brief Ipmb request class methods
  */
@@ -286,8 +288,25 @@ void IpmbChannel::ipmbSendI2cFrame(std::shared_ptr<std::vector<uint8_t>> buffer,
                     msgToLog.c_str());
                 return;
             }
-            currentRetryCnt++;
-            ipmbSendI2cFrame(buffer, currentRetryCnt);
+
+            // 1st retry immediate, 2nd retry 10ms, 3rd retry 20ms ...
+            if (retry_delay_enabled && currentRetryCnt > 0)
+            {
+                auto delay = std::make_shared<boost::asio::steady_timer>(io);
+                delay->expires_after(std::chrono::milliseconds(
+                    10 * (1 << (currentRetryCnt - 1))));
+                delay->async_wait([this, delay, buffer, currentRetryCnt](
+                                      const boost::system::error_code& err) {
+                    if (!err)
+                    {
+                        ipmbSendI2cFrame(buffer, currentRetryCnt + 1);
+                    }
+                });
+            }
+            else
+            {
+                ipmbSendI2cFrame(buffer, currentRetryCnt + 1);
+            }
         }
     });
 }

@@ -1,0 +1,11 @@
+option(
+    'num-of-retries', type: 'integer',
+    value: 2,
+    description: 'Number of retry attempts',
+)
+
+option(
+    'retry-delay', type: 'feature',
+    value: 'disabled',
+    description: 'Enable/disable the delay between retry attempts',
+)
