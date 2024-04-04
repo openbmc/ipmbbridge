@@ -7,6 +7,7 @@ project(
     'warning_level=3',
     'werror=true',
     'cpp_std=c++23',
+    'b_lto=true',
   ],
 )
 
@@ -28,7 +29,23 @@ boost_dep = dependency(
   'boost',
   modules: ['coroutine'],
   include_type: 'system',
+  required: false,
 )
+
+if not boost_dep.found()
+  cmake = import('cmake')
+  opt = cmake.subproject_options()
+  opt.add_cmake_defines({
+    'BOOST_INCLUDE_LIBRARIES': 'asio;callable_traits;context;coroutine',
+  })
+  boost_cmake = cmake.subproject('boost', required: true, options: opt)
+  boost_asio = boost_cmake.dependency('boost_asio').as_system()
+  boost_callable_traits = boost_cmake.dependency('boost_callable_traits').as_system()
+  boost_context = boost_cmake.dependency('boost_context').as_system()
+  boost_coroutine = boost_cmake.dependency('boost_coroutine').as_system()
+  boost_dep = [boost_asio, boost_callable_traits, boost_context, boost_coroutine]
+endif
+
 i2c_dep = cpp.find_library('i2c')
 nlohmann_json_dep = dependency('nlohmann_json', include_type: 'system')
 phosphor_logging_dep = dependency('phosphor-logging')
