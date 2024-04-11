@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c9870dd3_3da2258e",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2024-04-11T21:21:38Z",
+      "side": 1,
+      "message": "This doesn\u0027t make things build for me.\n\nI get a bunch of warnings about sdbusplus and LTO, but this certainly gets us closer, and as written, is an improvement.\n\n\non my system, this is what i get\n\n```\n/usr/bin/ld: /tmp/ccTvhI3b.ltrans59.ltrans.o:(.data.rel.ro+0xb78): undefined reference to `typeinfo for sdbusplus::exception::generated_exception\u0027\n/usr/bin/ld: /tmp/ccTvhI3b.ltrans59.ltrans.o:(.data.rel.ro+0xb90): undefined reference to `typeinfo for sdbusplus::exception::generated_exception\u0027\n/usr/bin/ld: /tmp/ccTvhI3b.ltrans59.ltrans.o:(.data.rel.ro+0xba8): undefined reference to `typeinfo for sdbusplus::exception::generated_exception\u0027\n/usr/bin/ld: /tmp/ccTvhI3b.ltrans59.ltrans.o:(.data.rel.ro+0xbc0): undefined reference to `typeinfo for sdbusplus::exception::generated_exception\u0027\n/usr/bin/ld: /tmp/ccTvhI3b.ltrans59.ltrans.o:(.data.rel.ro+0xbd8): more undefined references to `typeinfo for sdbusplus::exception::generated_exception\u0027 follow\n```",
+      "revId": "dcd3037b98b48bac4b37a10a89f9018ff3f32e15",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
