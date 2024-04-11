@@ -1,0 +1,165 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0a2a9750_b1060c5f",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 293,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2024-04-11T21:31:21Z",
+      "side": 1,
+      "message": "Why do we need two branches here?  Can\u0027t we just set expires_after(0ms) and it will run immediately?  currentRetryCnt \u003e 0 looks like it\u0027s trying to avoid the timer entirely.",
+      "range": {
+        "startLine": 293,
+        "startChar": 0,
+        "endLine": 293,
+        "endChar": 59
+      },
+      "revId": "933f38725f52c7b51e675293d024e87afaeb9254",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bc164939_3b1af902",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 295,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2024-04-11T21:31:21Z",
+      "side": 1,
+      "message": "This timer should be a variable on the IPMIChannel class to keep it alive.  We shouldn\u0027t need to construct/destroy the timer every loop.",
+      "range": {
+        "startLine": 295,
+        "startChar": 21,
+        "endLine": 295,
+        "endChar": 26
+      },
+      "revId": "933f38725f52c7b51e675293d024e87afaeb9254",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d263218c_b3565ace",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 297,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2024-04-11T21:31:21Z",
+      "side": 1,
+      "message": "This needs documentation with an inline code comment, and to be done on a different line.  As written, I can\u0027t read this codde.",
+      "range": {
+        "startLine": 297,
+        "startChar": 20,
+        "endLine": 297,
+        "endChar": 52
+      },
+      "revId": "933f38725f52c7b51e675293d024e87afaeb9254",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ca919eb4_d9e905c0",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 299,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2024-04-11T21:31:21Z",
+      "side": 1,
+      "message": "call this ec to be consistent.",
+      "range": {
+        "startLine": 299,
+        "startChar": 71,
+        "endLine": 299,
+        "endChar": 74
+      },
+      "revId": "933f38725f52c7b51e675293d024e87afaeb9254",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cda0eef1_403c99d2",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 304,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2024-04-11T21:31:21Z",
+      "side": 1,
+      "message": "Please put this in its own code block.  We\u0027re already in a lambda in this context (which per the coding guidelines, we shouldn\u0027t be), but this makes it worse.",
+      "range": {
+        "startLine": 298,
+        "startChar": 72,
+        "endLine": 304,
+        "endChar": 17
+      },
+      "revId": "933f38725f52c7b51e675293d024e87afaeb9254",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a8efe113_25adb545",
+        "filename": "meson.build",
+        "patchSetId": 3
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2024-04-11T21:31:21Z",
+      "side": 1,
+      "message": "most of the time we use configure_file.  Any reason we\u0027d use defines here?",
+      "range": {
+        "startLine": 26,
+        "startChar": 0,
+        "endLine": 30,
+        "endChar": 57
+      },
+      "revId": "933f38725f52c7b51e675293d024e87afaeb9254",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "17da76b3_b4982f14",
+        "filename": "meson.options",
+        "patchSetId": 3
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2024-04-11T21:31:21Z",
+      "side": 1,
+      "message": "Can we just try not having this as an option, and add it as an option if anything breaks?",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 1
+      },
+      "revId": "933f38725f52c7b51e675293d024e87afaeb9254",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
