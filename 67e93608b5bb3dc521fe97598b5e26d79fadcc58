@@ -20,6 +20,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "ac55bb0f_99dd1fee",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1001023
+      },
+      "writtenOn": "2024-04-12T19:06:33Z",
+      "side": 1,
+      "message": "With the new patchset it\u0027ll just be variable/function name changes",
+      "parentUuid": "f242530c_48215466",
+      "revId": "67e93608b5bb3dc521fe97598b5e26d79fadcc58",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "b6f6c114_d0d1ff4f",
         "filename": "ipmbbridged.cpp",
         "patchSetId": 3
@@ -31,6 +49,24 @@
       "writtenOn": "2024-04-11T21:14:34Z",
       "side": 1,
       "message": "This line immediately breaks all existing configs in the ecosystem, and I don\u0027t see patches to fix all of them, so this line effectively blocks this patch from being able to merge in a timely manner, which hurts the effort overall (because it includes a lot of things that are good).\n\nVariable names, code comments, documentation, and examples all make sense to change, and can be changed without discussion, because it has no impact to the code working.  But this line changes behavior, so I suspect to get this merged we need to support reading both parameter names for a time, ideally with a log warning that the old key name is deprecated, and intended to be removed.",
+      "revId": "67e93608b5bb3dc521fe97598b5e26d79fadcc58",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "deece9ae_2132febd",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 817,
+      "author": {
+        "id": 1001023
+      },
+      "writtenOn": "2024-04-12T19:06:33Z",
+      "side": 1,
+      "message": "Good points.  I\u0027ll make this patchset to just change variable names and such.  The changing of the channel names probably warrants its own change anyways.",
+      "parentUuid": "b6f6c114_d0d1ff4f",
       "revId": "67e93608b5bb3dc521fe97598b5e26d79fadcc58",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
