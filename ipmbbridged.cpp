@@ -56,9 +56,8 @@ IpmbRequest::IpmbRequest()
 IpmbRequest::IpmbRequest(uint8_t address, uint8_t netFn, uint8_t rsLun,
                          uint8_t rqSA, uint8_t seq, uint8_t rqLun, uint8_t cmd,
                          const std::vector<uint8_t>& inputData) :
-    address(address),
-    netFn(netFn), rsLun(rsLun), rqSA(rqSA), seq(seq), rqLun(rqLun), cmd(cmd),
-    timer(io)
+    address(address), netFn(netFn), rsLun(rsLun), rqSA(rqSA), seq(seq),
+    rqLun(rqLun), cmd(cmd), timer(io)
 {
     data.reserve(ipmbMaxDataSize);
     state = ipmbRequestState::invalid;
@@ -159,9 +158,8 @@ IpmbResponse::IpmbResponse(uint8_t address, uint8_t netFn, uint8_t rqLun,
                            uint8_t rsSA, uint8_t seq, uint8_t rsLun,
                            uint8_t cmd, uint8_t completionCode,
                            const std::vector<uint8_t>& inputData) :
-    address(address),
-    netFn(netFn), rqLun(rqLun), rsSA(rsSA), seq(seq), rsLun(rsLun), cmd(cmd),
-    completionCode(completionCode)
+    address(address), netFn(netFn), rqLun(rqLun), rsSA(rsSA), seq(seq),
+    rsLun(rsLun), cmd(cmd), completionCode(completionCode)
 {
     data.reserve(ipmbMaxDataSize);
 
@@ -529,8 +527,7 @@ IpmbChannel::IpmbChannel(boost::asio::io_context& io,
                          uint8_t ipmbBmcSlaveAddress,
                          uint8_t ipmbRqSlaveAddress, uint8_t channelIdx,
                          std::shared_ptr<IpmbCommandFilter> commandFilter) :
-    i2cSlaveDescriptor(io),
-    ipmbBmcSlaveAddress(ipmbBmcSlaveAddress),
+    i2cSlaveDescriptor(io), ipmbBmcSlaveAddress(ipmbBmcSlaveAddress),
     ipmbRqSlaveAddress(ipmbRqSlaveAddress), channelIdx(channelIdx),
     commandFilter(commandFilter)
 {}
