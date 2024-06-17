@@ -362,7 +362,7 @@ void IpmbChannel::processI2cEvent()
         goto end;
     }
 
-    /* Substract first byte len size from total frame length */
+    /* Subtract first byte len size from total frame length */
     r--;
 
     if ((r < ipmbMinFrameLength) || (r > ipmbMaxFrameLength))
@@ -370,7 +370,7 @@ void IpmbChannel::processI2cEvent()
         goto end;
     }
 
-    // valiate the frame
+    // validate the frame
     if (!isFrameValid(ipmbFrame, r))
     {
         goto end;

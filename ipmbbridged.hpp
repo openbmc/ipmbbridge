@@ -58,7 +58,7 @@ constexpr uint64_t ipmbRequestRetryTimeout = 250; // ms
 constexpr uint8_t ipmbI2cNumberOfRetries = 2;
 
 /**
- * @brief Ipmb boardcast address
+ * @brief Ipmb broadcast address
  */
 constexpr uint8_t broadcastAddress = 0x0;
 
