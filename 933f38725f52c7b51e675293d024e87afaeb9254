@@ -24,6 +24,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "2ef9dd76_19d7c1cc",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 293,
+      "author": {
+        "id": 1001127
+      },
+      "writtenOn": "2024-09-09T03:00:46Z",
+      "side": 1,
+      "message": "revised the logic.",
+      "parentUuid": "0a2a9750_b1060c5f",
+      "range": {
+        "startLine": 293,
+        "startChar": 0,
+        "endLine": 293,
+        "endChar": 59
+      },
+      "revId": "933f38725f52c7b51e675293d024e87afaeb9254",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "bc164939_3b1af902",
@@ -37,6 +61,30 @@
       "writtenOn": "2024-04-11T21:31:21Z",
       "side": 1,
       "message": "This timer should be a variable on the IPMIChannel class to keep it alive.  We shouldn\u0027t need to construct/destroy the timer every loop.",
+      "range": {
+        "startLine": 295,
+        "startChar": 21,
+        "endLine": 295,
+        "endChar": 26
+      },
+      "revId": "933f38725f52c7b51e675293d024e87afaeb9254",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "19127dbb_7a4ba4fe",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 295,
+      "author": {
+        "id": 1001127
+      },
+      "writtenOn": "2024-09-09T03:00:46Z",
+      "side": 1,
+      "message": "changed to member variable, \"retryTimer\".",
+      "parentUuid": "bc164939_3b1af902",
       "range": {
         "startLine": 295,
         "startChar": 21,
@@ -70,6 +118,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "2bdb63f6_d2b95798",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 297,
+      "author": {
+        "id": 1001127
+      },
+      "writtenOn": "2024-09-09T03:00:46Z",
+      "side": 1,
+      "message": "revised the logic and comment.",
+      "parentUuid": "d263218c_b3565ace",
+      "range": {
+        "startLine": 297,
+        "startChar": 20,
+        "endLine": 297,
+        "endChar": 52
+      },
+      "revId": "933f38725f52c7b51e675293d024e87afaeb9254",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "ca919eb4_d9e905c0",
@@ -83,6 +155,30 @@
       "writtenOn": "2024-04-11T21:31:21Z",
       "side": 1,
       "message": "call this ec to be consistent.",
+      "range": {
+        "startLine": 299,
+        "startChar": 71,
+        "endLine": 299,
+        "endChar": 74
+      },
+      "revId": "933f38725f52c7b51e675293d024e87afaeb9254",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0bc24b86_257b3fc9",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 299,
+      "author": {
+        "id": 1001127
+      },
+      "writtenOn": "2024-09-09T03:00:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ca919eb4_d9e905c0",
       "range": {
         "startLine": 299,
         "startChar": 71,
@@ -116,6 +212,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "c78efc1b_809cb8c4",
+        "filename": "ipmbbridged.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 304,
+      "author": {
+        "id": 1001127
+      },
+      "writtenOn": "2024-09-09T03:00:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "cda0eef1_403c99d2",
+      "range": {
+        "startLine": 298,
+        "startChar": 72,
+        "endLine": 304,
+        "endChar": 17
+      },
+      "revId": "933f38725f52c7b51e675293d024e87afaeb9254",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "a8efe113_25adb545",
@@ -139,6 +259,30 @@
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "065daf00_6beea2a6",
+        "filename": "meson.build",
+        "patchSetId": 3
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 1001127
+      },
+      "writtenOn": "2024-09-09T03:00:46Z",
+      "side": 1,
+      "message": "removed the option.",
+      "parentUuid": "a8efe113_25adb545",
+      "range": {
+        "startLine": 26,
+        "startChar": 0,
+        "endLine": 30,
+        "endChar": 57
+      },
+      "revId": "933f38725f52c7b51e675293d024e87afaeb9254",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "17da76b3_b4982f14",
@@ -152,6 +296,30 @@
       "writtenOn": "2024-04-11T21:31:21Z",
       "side": 1,
       "message": "Can we just try not having this as an option, and add it as an option if anything breaks?",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 1
+      },
+      "revId": "933f38725f52c7b51e675293d024e87afaeb9254",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "60c89aa6_efa64d7b",
+        "filename": "meson.options",
+        "patchSetId": 3
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1001127
+      },
+      "writtenOn": "2024-09-09T03:00:46Z",
+      "side": 1,
+      "message": "removed the option.",
+      "parentUuid": "17da76b3_b4982f14",
       "range": {
         "startLine": 1,
         "startChar": 0,
