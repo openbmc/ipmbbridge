@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "960af50f_6350dbfe",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000153
+      },
+      "writtenOn": "2025-01-08T19:36:42Z",
+      "side": 1,
+      "message": "There\u0027s no guarantee that ipmbsensor is even installed here.\n\nipmbsensor just needs to handle the case where the ipmbbridge isn\u0027t up yet.",
+      "revId": "396cd1d0acec207ab337ad6d6b0a80590e459459",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
