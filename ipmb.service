@@ -1,6 +1,7 @@
 [Unit]
 Description=IPMB bridge
 After=phosphor-ipmi-host.service
+After=xyz.openbmc_project.ipmbsensor.service
 
 [Service]
 ExecStart=/usr/bin/ipmbbridged
