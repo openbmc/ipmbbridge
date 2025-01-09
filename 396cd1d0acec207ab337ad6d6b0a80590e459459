@@ -33,6 +33,24 @@
       "message": "if you change this to type dbus and set the dbus name in the service file, does the problem fix itself?",
       "revId": "396cd1d0acec207ab337ad6d6b0a80590e459459",
       "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ee84a51d_f7b06cc4",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1002256
+      },
+      "writtenOn": "2025-01-09T12:21:38Z",
+      "side": 1,
+      "message": "changed the type to dbus in the service file , added temporary BusName, \nBut error still reflecting in log , \n........\nipmbbridged[807]: processI2cEvent: error getting response from IPMI\nipmbbridged[807]: processI2cEvent: error getting response from IPMI\nsystemd[1]: ipmb.service: start operation timed out. Terminating.\nsystemd[1]: ipmb.service: Failed with result \u0027timeout\u0027.\nsystemd[1]: ipmb.service: Scheduled restart job, restart counter is at 1.\n........",
+      "parentUuid": "a945fefc_9f90d361",
+      "revId": "396cd1d0acec207ab337ad6d6b0a80590e459459",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
     }
   ],
   "submitRequirementResults": []
