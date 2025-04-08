@@ -721,6 +721,7 @@ std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>
     std::vector<uint8_t> buffer{};
     if (request->ipmbToi2cConstruct(buffer) != 0)
     {
+        makeRequestInvalid(*request);
         return returnStatus(ipmbResponseStatus::error);
     }
 
