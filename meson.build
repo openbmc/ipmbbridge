@@ -29,7 +29,7 @@ add_project_arguments(
 
 boost_dep = dependency(
     'boost',
-    modules: ['coroutine'],
+    modules: ['coroutine', 'context'],
     include_type: 'system',
     required: false,
 )
