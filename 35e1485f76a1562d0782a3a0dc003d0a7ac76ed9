@@ -1,0 +1,7 @@
+Code-Review+2: Ed Tanous <ed@tanous.net>
+Verified+1: OpenBMC CI <openbmcbump-ci@yahoo.com>
+Submitted-by: Ed Tanous <ed@tanous.net>
+Submitted-at: Tue, 22 Apr 2025 13:59:50 +0000
+Reviewed-on: https://gerrit.openbmc.org/c/openbmc/ipmbbridge/+/79835
+Project: openbmc/ipmbbridge
+Branch: refs/heads/master
