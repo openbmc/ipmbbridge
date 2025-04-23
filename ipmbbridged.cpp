@@ -725,6 +725,7 @@ std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>
         return returnStatus(ipmbResponseStatus::error);
     }
 
+    int oneMsgLog = ipmbNumberOfTries;
     for (int i = 0; i < ipmbNumberOfTries; i++)
     {
         boost::system::error_code ec;
@@ -742,7 +743,7 @@ std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>
             break;
         }
 
-        if (i2cRetryCnt == ipmbI2cNumberOfRetries)
+        if (i2cRetryCnt == ipmbI2cNumberOfRetries && !--oneMsgLog)
         {
             std::string msgToLog =
                 "requestAdd: Sent to I2C failed after retries."
