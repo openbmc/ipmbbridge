@@ -285,6 +285,13 @@ void IpmbChannel::ipmbSendI2cFrame(std::shared_ptr<std::vector<uint8_t>> buffer,
                     return;
                 }
                 currentRetryCnt++;
+
+                // retry with delay
+                dist.param(std::uniform_int_distribution<>::param_type(
+                    0, (1 << currentRetryCnt) - 1));
+                std::this_thread::sleep_for(std::chrono::microseconds(
+                    dist(gen) * slotTimeUs));
+
                 ipmbSendI2cFrame(buffer, currentRetryCnt);
             }
         });
@@ -529,7 +536,7 @@ IpmbChannel::IpmbChannel(boost::asio::io_context& io,
                          std::shared_ptr<IpmbCommandFilter> commandFilter) :
     i2cTargetDescriptor(io), ipmbBmcTargetAddress(ipmbBmcTargetAddress),
     ipmbRqTargetAddress(ipmbRqTargetAddress), channelIdx(channelIdx),
-    commandFilter(commandFilter)
+    commandFilter(commandFilter), rd(), gen(rd())
 {}
 
 int IpmbChannel::ipmbChannelInit(const char* ipmbI2cTarget)

@@ -23,6 +23,7 @@
 
 #include <optional>
 #include <vector>
+#include <random>
 
 extern "C"
 {
@@ -54,8 +55,15 @@ constexpr uint64_t ipmbRequestRetryTimeout = 250; // ms
 
 /**
  * @brief Ipmb I2C communication
+ *
+ * The minimum length of an IPMB packet is 7 bytes.
+ * Each byte consists of 8 data bits and 1 ACK bit, totaling 9 bits per byte.
+ * Total bits transmitted = 7 * 9 + 1 start bit + 1 stop bit = 65 bits.
+ * At an I2C bus speed of 100 kbps, the estimated transmission time is:
+ * 65 bits / 100,000 bits/sec = 650 microseconds.
  */
-constexpr uint8_t ipmbI2cNumberOfRetries = 2;
+ constexpr uint8_t ipmbI2cNumberOfRetries = 9;
+ constexpr uint32_t slotTimeUs = 650; // µs
 
 /**
  * @brief Ipmb broadcast address
@@ -313,6 +321,10 @@ class IpmbChannel
     // array storing outstanding requests
     std::array<std::shared_ptr<IpmbRequest>, ipmbMaxOutstandingRequestsCount>
         outstandingRequests;
+
+    std::random_device rd;
+    std::mt19937 gen;
+    std::uniform_int_distribution<> dist;
 
     void requestTimerCallback(std::shared_ptr<IpmbRequest> request,
                               std::shared_ptr<std::vector<uint8_t>> buffer);
