@@ -75,7 +75,7 @@ executable(
 
 install_data(
     'ipmb.service',
-    install_dir: systemd_dep.get_variable('systemdsystemunitdir'),
+    install_dir: systemd_dep.get_variable('systemd_system_unit_dir'),
 )
 
 install_data(
