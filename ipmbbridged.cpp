@@ -358,7 +358,11 @@ void IpmbChannel::responseMatch(std::unique_ptr<IpmbResponse>& response)
         {
             // match, response is corresponding to previously sent request
             request->state = ipmbRequestState::matched;
-            request->timer->cancel();
+
+            if (request->timer)
+            {
+                request->timer->cancel();
+            }
             request->matchedResponse = std::move(response);
         }
     }
@@ -772,9 +776,12 @@ std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, std::vector<uint8_t>>
                 msgToLog.c_str());
         }
 
-        request->timer->expires_after(
-            std::chrono::milliseconds(ipmbRequestRetryTimeout));
-        request->timer->async_wait(yield[ec]);
+        if (request->timer)
+        {
+            request->timer->expires_after(
+                std::chrono::milliseconds(ipmbRequestRetryTimeout));
+            request->timer->async_wait(yield[ec]);
+        }
 
         if (ec && ec != boost::asio::error::operation_aborted)
         {
