@@ -961,7 +961,7 @@ void addUpdateTargetAddrHandler()
             channel->ipmbChannelUpdateTargetAddress(targetAddr);
         };
 
-    static auto match = std::make_unique<sdbusplus::bus::match_t>(
+    static auto match = std::make_unique<sdbusplus::match>(
         static_cast<sdbusplus::bus_t&>(*conn),
         "type='signal',member='updateBmcSlaveAddr',", updateTargetAddrHandler);
 }
@@ -1005,7 +1005,7 @@ void addSendBroadcastHandler()
             channel->ipmbSendI2cFrame(buffer);
         };
 
-    static auto match = std::make_unique<sdbusplus::bus::match_t>(
+    static auto match = std::make_unique<sdbusplus::match>(
         static_cast<sdbusplus::bus_t&>(*conn),
         "type='signal',member='sendBroadcast',", sendBroadcastHandler);
 }
